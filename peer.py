@@ -2,6 +2,10 @@ import socket
 import threading
 import time
 import json
+import uuid
+
+# Unique ID for this peer
+PEER_ID = str(uuid.uuid4())
 
 # Example files this peer owns
 my_files = {
@@ -9,7 +13,7 @@ my_files = {
     "file2.mp3": 5000
 }
 
-# Table of known peers and their files
+# Discovery table
 peer_table = {}
 
 BROADCAST_PORT = 50000
@@ -24,6 +28,7 @@ def broadcast_presence():
     while True:
         message = json.dumps({
             "type": "PEER",
+            "peer_id": PEER_ID,
             "files": my_files
         })
         sock.sendto(message.encode(), ('<broadcast>', BROADCAST_PORT))
@@ -37,14 +42,26 @@ def listen_for_peers():
 
     while True:
         data, addr = sock.recvfrom(4096)
-        print("Received broadcast from:", addr)
+
 
         try:
             msg = data.decode()
             data_obj = json.loads(msg)
 
             if data_obj.get("type") == "PEER":
-                peer_table[addr[0]] = data_obj["files"]
+                peer_id = data_obj["peer_id"]
+
+                # Ignore our own broadcasts
+                if peer_id == PEER_ID:
+                    continue
+                print("Received broadcast from:", addr)
+
+                peer_table[peer_id] = {
+                    "ip": addr[0],
+                    "files": data_obj["files"],
+                    "last_seen": time.time()
+                }
+
                 print("Updated peer table:")
                 print(peer_table)
 
