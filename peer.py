@@ -4,89 +4,99 @@ import time
 import json
 import uuid
 
-PEER_ID = str(uuid.uuid4())
-PEER_TIMEOUT = 15
 
-my_files = {
-    "file1.txt": 1024,
-    "file2.mp3": 5000
-}
+class Peer:
+    def __init__(self, broadcast_ip="172.16.255.255", port=50000):
+        self.peer_id = str(uuid.uuid4())
+        self.broadcast_ip = broadcast_ip
+        self.port = port
 
-peer_table = {}
+        self.broadcast_interval = 5
+        self.peer_timeout = 15
 
-BROADCAST_PORT = 50000
-BROADCAST_INTERVAL = 5
+        self.my_files = {
+            "file1.txt": 1024,
+            "file2.mp3": 5000
+        }
 
+        # peer_id -> peer info
+        self.peer_table = {}
 
-def broadcast_presence():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    def start(self):
+        threading.Thread(target=self.broadcast_presence, daemon=True).start()
+        threading.Thread(target=self.listen_for_peers, daemon=True).start()
+        threading.Thread(target=self.cleanup_peers, daemon=True).start()
 
-    while True:
-        message = json.dumps({
-            "type": "PEER",
-            "peer_id": PEER_ID,
-            "files": my_files
-        })
+        self.cli_loop()
 
-        sock.sendto(message.encode(), ('172.16.255.255', BROADCAST_PORT))
-        print("Broadcast sent")
-        time.sleep(BROADCAST_INTERVAL)
+    def broadcast_presence(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
+        while True:
+            message = json.dumps({
+                "type": "PEER",
+                "peer_id": self.peer_id,
+                "files": self.my_files
+            })
 
-def listen_for_peers():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock.bind(('0.0.0.0', BROADCAST_PORT))
+            sock.sendto(message.encode(), (self.broadcast_ip, self.port))
+            print("Broadcast sent")
+            time.sleep(self.broadcast_interval)
 
-    while True:
-        data, addr = sock.recvfrom(4096)
+    def listen_for_peers(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.bind(("0.0.0.0", self.port))
 
+        while True:
+            data, addr = sock.recvfrom(4096)
 
-        try:
-            obj = json.loads(data.decode())
+            try:
+                obj = json.loads(data.decode())
 
-            if obj.get("type") == "PEER":
-                peer_id = obj["peer_id"]
-
-                if peer_id == PEER_ID:
+                if obj.get("type") != "PEER":
                     continue
-                print("Received raw data from", addr)
-                peer_table[peer_id] = {
+
+                peer_id = obj.get("peer_id")
+
+                if peer_id == self.peer_id:
+                    continue
+
+                self.peer_table[peer_id] = {
                     "ip": addr[0],
                     "files": obj["files"],
                     "last_seen": time.time()
                 }
 
-                #print("Updated peer table:")
-                #print(peer_table)
+                print(f"Discovered peer {peer_id} at {addr[0]}")
 
-        except Exception as e:
-            print("Error:", e)
+            except Exception as e:
+                print("Error processing message:", e)
 
-def cleanup_peers():
-    while True:
-        now = time.time()
-        removed = []
+    def cleanup_peers(self):
+        while True:
+            now = time.time()
+            removed = []
 
-        for peer_id, info in list(peer_table.items()):
-            if now - info["last_seen"] > PEER_TIMEOUT:
-                removed.append(peer_id)
-                del peer_table[peer_id]
+            for peer_id, info in list(self.peer_table.items()):
+                if now - info["last_seen"] > self.peer_timeout:
+                    removed.append(peer_id)
+                    del self.peer_table[peer_id]
 
-        if removed:
-            print("Removed inactive peers:", removed)
+            if removed:
+                print("Removed inactive peers:", removed)
 
-        time.sleep(5)
+            time.sleep(5)
 
+    def cli_loop(self):
+        while True:
+            cmd = input("Enter 't' to show peer table: ").strip()
+            if cmd == "t":
+                print(json.dumps(self.peer_table, indent=4))
 
 
 if __name__ == "__main__":
-    threading.Thread(target=broadcast_presence, daemon=True).start()
-    threading.Thread(target=listen_for_peers, daemon=True).start()
-    threading.Thread(target=cleanup_peers, daemon=True).start()
-
-    while True:
-        if input("Enter 't': ") == "t":
-            print(peer_table)
+    peer = Peer()
+    peer.start()
