@@ -3,25 +3,44 @@ import threading
 import time
 import json
 import uuid
+import os
 
 
 class Peer:
-    def __init__(self, broadcast_ip="172.16.255.255", port=50000):
+    def __init__(self, shared_folder="shared"):
         self.peer_id = str(uuid.uuid4())
-        self.broadcast_ip = broadcast_ip
-        self.port = port
-
+        self.broadcast_ip = "192.168.1.255"  # At home broadcast_ip=192.168.1.255, at school 172.16.255.255
+        self.port = 50000
         self.broadcast_interval = 5
         self.peer_timeout = 15
 
-        self.my_files = {
-            "file1.txt": 1024,
-            "file2.mp3": 5000
-        }
-
+        self.my_files = {}
+        self.shared_folder = shared_folder
         # peer_id -> peer info
         self.peer_table = {}
+        self.load_shared_files()
 
+    def load_shared_files(self):
+        """
+        Scan the shared folder and build the my_files dictionary.
+        """
+        self.my_files.clear()
+
+        if not os.path.isdir(self.shared_folder):
+            print("Shared folder does not exist, creating it...")
+            os.makedirs(self.shared_folder)
+
+        for filename in os.listdir(self.shared_folder):
+            path = os.path.join(self.shared_folder, filename)
+
+            if os.path.isfile(path):
+                size = os.path.getsize(path)
+                self.my_files[filename] = {
+                    "size": size
+                }
+
+        print("Loaded shared files:")
+        print(self.my_files)
     def start(self):
         threading.Thread(target=self.broadcast_presence, daemon=True).start()
         threading.Thread(target=self.listen_for_peers, daemon=True).start()
