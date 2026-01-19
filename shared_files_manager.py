@@ -1,7 +1,6 @@
 import os
 import shutil
 
-
 class SharedFilesManager:
     def __init__(self, shared_folder="shared"):
         self.shared_folder = shared_folder
@@ -10,7 +9,6 @@ class SharedFilesManager:
 
     def load_shared_files(self):
         self.my_files.clear()
-
         if not os.path.isdir(self.shared_folder):
             print("Shared folder does not exist, creating it...")
             os.makedirs(self.shared_folder)
@@ -21,7 +19,6 @@ class SharedFilesManager:
                 self.my_files[filename] = {
                     "size": os.path.getsize(path)
                 }
-
         print("Loaded shared files:")
         print(self.my_files)
 
@@ -35,19 +32,28 @@ class SharedFilesManager:
 
         shutil.copy(source_path, destination)
         print(f"Added file: {filename}")
-
         self.load_shared_files()
 
     def remove_file(self, filename):
         path = os.path.join(self.shared_folder, filename)
 
         if filename not in self.my_files:
-            print("File not found in shared files")
+            print("File not found in shared list")
             return
 
         try:
             os.remove(path)
             del self.my_files[filename]
             print(f"Removed file: {filename}")
+            self.load_shared_files()
         except Exception as e:
-            print("Failed to remove file:", e)
+            print(f"Error deleting file: {e}")
+
+    # --- NEW HELPER METHODS FOR TCP ---
+    def get_file_path(self, filename):
+        if filename in self.my_files:
+            return os.path.join(self.shared_folder, filename)
+        return None
+
+    def get_download_path(self, filename):
+        return os.path.join(self.shared_folder, filename)
