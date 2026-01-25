@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>P2P File Sharer</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f4; }
+        .container { display: flex; gap: 20px; }
+        .box { background: white; padding: 20px; border-radius: 8px; width: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+        ul { list-style-type: none; padding: 0; }
+        li { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
+        button { background-color: #007bff; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;}
+        button:hover { background-color: #0056b3; }
+        .refresh { margin-bottom: 20px; padding: 10px 20px; font-size: 16px; background-color: #28a745; }
+    </style>
+</head>
+<body>
+    <h1>🕸️ Local P2P Network Dashboard</h1>
+    <button class="refresh" onclick="location.reload()">🔄 Refresh Peer List</button>
+
+    <div class="container">
+        <div class="box">
+            <h2>📂 My Shared Files</h2>
+            <ul>
+                {% for filename, meta in my_files.items() %}
+                <li>
+                    <span>{{ filename }}</span>
+                    <span style="color: gray; font-size: 0.9em;">{{ meta.size }} bytes</span>
+                </li>
+                {% else %}
+                <p>No files shared yet.</p>
+                {% endfor %}
+            </ul>
+            <form action="/add_file" method="post" style="margin-top: 15px;">
+                <input type="text" name="filepath" placeholder="C:\path\to\file.txt" required style="width: 70%;">
+                <button type="submit">Share File</button>
+            </form>
+        </div>
+
+        <div class="box">
+            <h2>🌍 Network Peers & Files</h2>
+            {% if peer_table %}
+                {% for peer_id, data in peer_table.items() %}
+                    <div style="background: #eef; padding: 10px; margin-bottom: 10px; border-radius: 5px;">
+                        <strong>Peer IP: {{ data.ip }}</strong>
+                        <ul>
+                            {% for filename, meta in data.files.items() %}
+                            <li>
+                                {{ filename }} ({{ meta.size }} b)
+                                <form action="/download" method="post" style="display:inline;">
+                                    <input type="hidden" name="ip" value="{{ data.ip }}">
+                                    <input type="hidden" name="filename" value="{{ filename }}">
+                                    <button type="submit">⬇ Download</button>
+                                </form>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No peers discovered yet...</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
