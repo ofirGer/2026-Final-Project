@@ -11,56 +11,108 @@
         li { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
         button { background-color: #007bff; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;}
         button:hover { background-color: #0056b3; }
-        .refresh { margin-bottom: 20px; padding: 10px 20px; font-size: 16px; background-color: #28a745; }
+        .add-btn { background-color: #6f42c1; width: 100%; padding: 10px; font-size: 16px; margin-top: 15px;}
+        .add-btn:hover { background-color: #5a32a3; }
+        .badge { background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; }
     </style>
 </head>
 <body>
     <h1>🕸️ Local P2P Network Dashboard</h1>
-    <button class="refresh" onclick="location.reload()">🔄 Refresh Peer List</button>
 
     <div class="container">
         <div class="box">
             <h2>📂 My Shared Files</h2>
-            <ul>
+            <ul id="my-files-list">
                 {% for filename, meta in my_files.items() %}
                 <li>
                     <span>{{ filename }}</span>
-                    <span style="color: gray; font-size: 0.9em;">{{ meta.size }} bytes</span>
+                    <span class="badge">{{ meta.size }} bytes</span>
                 </li>
-                {% else %}
-                <p>No files shared yet.</p>
                 {% endfor %}
             </ul>
-            <form action="/add_file" method="post" style="margin-top: 15px;">
-                <input type="text" name="filepath" placeholder="C:\path\to\file.txt" required style="width: 70%;">
-                <button type="submit">Share File</button>
+
+            <form action="/select_file" method="post">
+                <button type="submit" class="add-btn">➕ Select File to Share</button>
             </form>
         </div>
 
         <div class="box">
             <h2>🌍 Network Peers & Files</h2>
-            {% if peer_table %}
+            <div id="peer-container">
                 {% for peer_id, data in peer_table.items() %}
-                    <div style="background: #eef; padding: 10px; margin-bottom: 10px; border-radius: 5px;">
-                        <strong>Peer IP: {{ data.ip }}</strong>
-                        <ul>
-                            {% for filename, meta in data.files.items() %}
-                            <li>
-                                {{ filename }} ({{ meta.size }} b)
-                                <form action="/download" method="post" style="display:inline;">
-                                    <input type="hidden" name="ip" value="{{ data.ip }}">
-                                    <input type="hidden" name="filename" value="{{ filename }}">
-                                    <button type="submit">⬇ Download</button>
-                                </form>
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p>No peers discovered yet...</p>
-            {% endif %}
+                    {% endfor %}
+            </div>
         </div>
     </div>
+
+    <script>
+        // formatting helper
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        async function updateDashboard() {
+            try {
+                // 1. Fetch JSON data from Python
+                const response = await fetch('/api/data');
+                const data = await response.json();
+
+                // 2. Update "My Files" List
+                const myFilesList = document.getElementById('my-files-list');
+                myFilesList.innerHTML = ''; // Clear current list
+
+                // Rebuild list from JSON
+                for (const [filename, meta] of Object.entries(data.my_files)) {
+                    myFilesList.innerHTML += `
+                        <li>
+                            <span>${filename}</span>
+                            <span class="badge">${formatBytes(meta.size)}</span>
+                        </li>`;
+                }
+
+                // 3. Update "Network Peers" List
+                const peerContainer = document.getElementById('peer-container');
+                peerContainer.innerHTML = ''; // Clear container
+
+                const peers = Object.entries(data.peers);
+                if (peers.length === 0) {
+                    peerContainer.innerHTML = '<p>Searching for peers...</p>';
+                }
+
+                for (const [peerId, peerData] of peers) {
+                    let filesHtml = '';
+
+                    // Build the list of files for this peer
+                    for (const [fname, meta] of Object.entries(peerData.files)) {
+                        filesHtml += `
+                            <li>
+                                ${fname} <span class="badge">${formatBytes(meta.size)}</span>
+                                <form action="/download" method="post" style="display:inline;">
+                                    <input type="hidden" name="ip" value="${peerData.ip}">
+                                    <input type="hidden" name="filename" value="${fname}">
+                                    <button type="submit">⬇ Download</button>
+                                </form>
+                            </li>`;
+                    }
+
+                    // Append the whole peer block
+                    peerContainer.innerHTML += `
+                        <div style="background: #eef; padding: 10px; margin-bottom: 10px; border-radius: 5px;">
+                            <strong>Peer IP: ${peerData.ip}</strong>
+                            <ul>${filesHtml}</ul>
+                        </div>`;
+                }
+
+            } catch (error) {
+                console.error("Error fetching updates:", error);
+            }
+        }
+
+        // Run the update function every 2000 milliseconds (2 seconds)
+        setInterval(updateDashboard, 2000);
+    </script>
 </body>
 </html>
