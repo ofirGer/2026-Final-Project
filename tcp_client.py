@@ -5,10 +5,9 @@ import hashlib
 
 
 class TCPClient:
-    def __init__(self, download_folder="downloads"):
-        self.download_folder = download_folder
-        if not os.path.exists(self.download_folder):
-            os.makedirs(self.download_folder)
+    def __init__(self, file_manager):
+        # We now link the client to the file manager
+        self.file_manager = file_manager
 
     def download_file(self, target_ip, filename, file_metadata, port=50001):
         print(f"Starting download: {filename} from {target_ip}")
@@ -17,12 +16,11 @@ class TCPClient:
         chunk_size = file_metadata['chunk_size']
         checksums = file_metadata['checksums']
 
-        save_path = os.path.join(self.download_folder, filename)
+        # <--- CHANGE: Save directly to the shared folder
+        save_path = os.path.join(self.file_manager.shared_folder, filename)
 
-        # Create/Open the file in binary write mode
-        # 'wb' overwrites the file. In the future, we will use 'r+b' to resume.
+        # Create/Open the file
         with open(save_path, 'wb') as f:
-            # We just create an empty file of the right size first (optional but good practice)
             f.truncate(file_metadata['size'])
 
         for i in range(total_chunks):
@@ -30,17 +28,17 @@ class TCPClient:
 
         print(f"Download complete: {filename}")
 
+        # <--- NEW: Tell the manager to scan the folder again so the new file appears immediately
+        self.file_manager.load_shared_files()
+
     def get_chunk(self, ip, port, filename, chunk_index, chunk_size, expected_hash, save_path):
         try:
-            # 1. Connect to the peer
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect((ip, port))
 
-            # 2. Send Request
             request = json.dumps({"filename": filename, "chunk_index": chunk_index})
             sock.sendall(request.encode())
 
-            # 3. Receive Data (might come in small packets, so we loop)
             received_data = b""
             while len(received_data) < chunk_size:
                 packet = sock.recv(4096)
@@ -50,20 +48,17 @@ class TCPClient:
 
             sock.close()
 
-            # 4. Verify Hash (Security Check)
-            # Handle edge case: last chunk might be smaller than chunk_size
             sha256 = hashlib.sha256()
             sha256.update(received_data)
             calculated_hash = sha256.hexdigest()
 
             if calculated_hash == expected_hash:
-                # 5. Write to disk at the correct location
                 with open(save_path, 'r+b') as f:
                     f.seek(chunk_index * chunk_size)
                     f.write(received_data)
-                print(f"Chunk {chunk_index} verified and written.")
+                print(f"Chunk {chunk_index} verified.")
             else:
-                print(f"HASH MISMATCH for chunk {chunk_index}! Retrying... (Logic to be added)")
+                print(f"HASH MISMATCH for chunk {chunk_index}!")
 
         except Exception as e:
             print(f"Error downloading chunk {chunk_index}: {e}")

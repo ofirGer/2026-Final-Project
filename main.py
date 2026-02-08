@@ -16,7 +16,7 @@ if __name__ == "__main__":
     tcp_server.start()
 
     # 3. Initialize the Client (To download from others)
-    tcp_client = TCPClient()
+    tcp_client = TCPClient(file_manager)
 
     # 4. Start the Web UI
     # Note: We pass tcp_client so the UI can trigger downloads
