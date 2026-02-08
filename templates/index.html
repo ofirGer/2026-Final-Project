@@ -1,158 +1,188 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>P2P File Sharer</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f4; }
-        .container { display: flex; gap: 20px; }
-        .box { background: white; padding: 20px; border-radius: 8px; width: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        h2 { border-bottom: 2px solid #ddd; padding-bottom: 10px; }
-        ul { list-style-type: none; padding: 0; }
-        li { padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
-        button { background-color: #007bff; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;}
-        button:hover { background-color: #0056b3; }
-        .add-btn { background-color: #6f42c1; width: 100%; padding: 10px; font-size: 16px; margin-top: 15px;}
-        .add-btn:hover { background-color: #5a32a3; }
-        .badge { background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; }
-        /* ... existing styles ... */
+        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f4f9; }
+        h1, h2 { color: #333; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
 
-        /* New style for the Remove Button */
+        /* List Styles */
+        ul { list-style-type: none; padding: 0; }
+        li { background: #fff; border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        li:last-child { border-bottom: none; }
+
+        /* Buttons */
+        button { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-primary:hover { background-color: #0056b3; }
+        .btn-success:hover { background-color: #218838; }
+
+        /* Remove Button Style (Black Outline) */
         .remove-btn {
-            background-color: white;      /* White background */
-            color: black;                 /* Black X */
-            border: 1px solid black;      /* Black outline */
-            border-radius: 50%;           /* Circular shape */
+            background-color: white;
+            color: black;
+            border: 1px solid black;
+            border-radius: 50%;
             width: 25px;
             height: 25px;
             cursor: pointer;
             font-weight: bold;
-            line-height: 23px;            /* Vertically centers the X */
+            line-height: 23px;
             text-align: center;
             padding: 0;
             margin-left: 10px;
-            transition: background-color 0.2s; /* Smooth color change */
+            transition: background-color 0.2s;
         }
-
         .remove-btn:hover {
-            background-color: #cccccc;    /* Gray background on hover */
+            background-color: #cccccc;
         }
+
+        .badge { background: #e2e6ea; padding: 4px 8px; border-radius: 12px; font-size: 0.85em; }
+
+        /* Progress Bar Styles */
+        .progress-container { width: 100%; background-color: #eee; border-radius: 5px; height: 10px; margin-top: 5px; }
+        .progress-bar { background-color: #28a745; height: 100%; border-radius: 5px; transition: width 0.5s ease; }
     </style>
-</head>
-<body>
-    <h1>🕸️ Local P2P Network Dashboard</h1>
-
-    <div class="container">
-        <div class="box">
-            <h2>📂 My Shared Files</h2>
-            <ul id="my-files-list">
-                {% for filename, meta in my_files.items() %}
-                <li>
-                    <span>{{ filename }}</span>
-                    <div style="display: flex; align-items: center;">
-                        <span class="badge">{{ meta.size }} bytes</span>
-
-                        <form action="/remove" method="post" style="margin: 0;">
-                            <input type="hidden" name="filename" value="{{ filename }}">
-                            <button type="submit" class="remove-btn">×</button>
-                        </form>
-                    </div>
-                </li>
-                {% endfor %}
-            </ul>
-
-            <form action="/select_file" method="post">
-                <button type="submit" class="add-btn">➕ Select File to Share</button>
-            </form>
-        </div>
-
-        <div class="box">
-            <h2>🌍 Network Peers & Files</h2>
-            <div id="peer-container">
-                {% for peer_id, data in peer_table.items() %}
-                    {% endfor %}
-            </div>
-        </div>
-    </div>
-
     <script>
-        // formatting helper
-        function formatBytes(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(1024));
-            return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + sizes[i];
+        function formatBytes(bytes, decimals = 2) {
+            if (!+bytes) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
         }
 
         async function updateDashboard() {
-
             try {
-                // 1. Fetch JSON data from Python
                 const response = await fetch('/api/data');
                 const data = await response.json();
 
-                // 2. Update "My Files" List
+                // 1. Update Network Files List
+                const networkList = document.getElementById('network-files-list');
+                networkList.innerHTML = '';
+
+                // Track if we found any files
+                let foundFiles = false;
+
+                for (const [peerId, peerData] of Object.entries(data.peers)) {
+                    for (const [filename, meta] of Object.entries(peerData.files)) {
+                        foundFiles = true;
+                        networkList.innerHTML += `
+                            <li>
+                                <div>
+                                    <strong>${filename}</strong> <br>
+                                    <small style="color: #666;">Size: ${formatBytes(meta.size)} | Peer: ${peerData.ip}</small>
+                                </div>
+                                <form action="/download" method="post">
+                                    <input type="hidden" name="ip" value="${peerData.ip}">
+                                    <input type="hidden" name="filename" value="${filename}">
+                                    <button type="submit" class="btn-success">Download ⬇️</button>
+                                </form>
+                            </li>`;
+                    }
+                }
+
+                if (!foundFiles) {
+                    networkList.innerHTML = '<li style="color: #666; justify-content: center;">No files found on network yet.</li>';
+                }
+
+                // 2. Update My Shared Files List
                 const myFilesList = document.getElementById('my-files-list');
-                myFilesList.innerHTML = ''; // Clear current list
+                myFilesList.innerHTML = '';
 
-
-
-                // Rebuild "My Files" list
                 for (const [filename, meta] of Object.entries(data.my_files)) {
                     myFilesList.innerHTML += `
                         <li>
                             <span>${filename}</span>
                             <div style="display: flex; align-items: center;">
                                 <span class="badge">${formatBytes(meta.size)}</span>
-
                                 <form action="/remove" method="post" style="margin: 0;">
                                     <input type="hidden" name="filename" value="${filename}">
-
                                     <button type="submit" class="remove-btn" title="Remove File">×</button>
                                 </form>
                             </div>
                         </li>`;
                 }
 
-                // 3. Update "Network Peers" List
-                const peerContainer = document.getElementById('peer-container');
-                peerContainer.innerHTML = ''; // Clear container
+                // 3. Update Active Downloads List (NEW)
+                const downloadList = document.getElementById('download-list');
+                downloadList.innerHTML = '';
 
-                const peers = Object.entries(data.peers);
-                if (peers.length === 0) {
-                    peerContainer.innerHTML = '<p>Searching for peers...</p>';
-                }
+                const downloads = data.downloads || {};
 
-                for (const [peerId, peerData] of peers) {
-                    let filesHtml = '';
-
-                    // Build the list of files for this peer
-                    for (const [fname, meta] of Object.entries(peerData.files)) {
-                        filesHtml += `
-                            <li>
-                                ${fname} <span class="badge">${formatBytes(meta.size)}</span>
-                                <form action="/download" method="post" style="display:inline;">
-                                    <input type="hidden" name="ip" value="${peerData.ip}">
-                                    <input type="hidden" name="filename" value="${fname}">
-                                    <button type="submit">⬇ Download</button>
-                                </form>
+                if (Object.keys(downloads).length === 0) {
+                     downloadList.innerHTML = '<li style="color: #666; justify-content: center;">No active downloads</li>';
+                } else {
+                    for (const [filename, percent] of Object.entries(downloads)) {
+                        downloadList.innerHTML += `
+                            <li style="display: block;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <strong>${filename}</strong>
+                                    <span>${percent}%</span>
+                                </div>
+                                <div class="progress-container">
+                                    <div class="progress-bar" style="width: ${percent}%;"></div>
+                                </div>
                             </li>`;
                     }
-
-                    // Append the whole peer block
-                    peerContainer.innerHTML += `
-                        <div style="background: #eef; padding: 10px; margin-bottom: 10px; border-radius: 5px;">
-                            <strong>Peer IP: ${peerData.ip}</strong>
-                            <ul>${filesHtml}</ul>
-                        </div>`;
                 }
 
             } catch (error) {
-                console.error("Error fetching updates:", error);
+                console.error('Error fetching data:', error);
             }
         }
 
-        // Run the update function every 2000 milliseconds (2 seconds)
+        // Auto-refresh every 2 seconds
         setInterval(updateDashboard, 2000);
+
+        // Run immediately on load
+        window.onload = updateDashboard;
     </script>
+</head>
+<body>
+    <h1>🚀 P2P File Sharer</h1>
+
+    <div class="container">
+        <h2>⬇️ Active Downloads</h2>
+        <ul id="download-list">
+            <li style="color: #666; justify-content: center;">Loading...</li>
+        </ul>
+    </div>
+
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>📂 My Shared Files</h2>
+        <form action="/select_file" method="post">
+            <button type="submit" class="btn-primary">+ Add File</button>
+        </form>
+    </div>
+
+    <div class="container">
+        <ul id="my-files-list">
+             {% for filename, meta in my_files.items() %}
+             <li>
+                 <span>{{ filename }}</span>
+                 <div style="display: flex; align-items: center;">
+                     <span class="badge">{{ meta.size }} bytes</span>
+                     <form action="/remove" method="post" style="margin: 0;">
+                         <input type="hidden" name="filename" value="{{ filename }}">
+                         <button type="submit" class="remove-btn">×</button>
+                     </form>
+                 </div>
+             </li>
+             {% endfor %}
+        </ul>
+    </div>
+
+    <div class="container">
+        <h2>🌐 Network Files (Downloadable)</h2>
+        <ul id="network-files-list">
+            <li style="color: #666; justify-content: center;">Scanning for peers...</li>
+        </ul>
+    </div>
 </body>
 </html>

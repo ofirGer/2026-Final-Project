@@ -25,10 +25,11 @@ class WebUI:
         # --- NEW: API Route for JavaScript to talk to ---
         @self.app.route('/api/data')
         def get_data():
-            """Returns the current state of peers and files as JSON"""
+            """Returns the current state of peers, files, AND active downloads"""
             return jsonify({
                 "peers": self.peer.peer_table,
-                "my_files": self.file_manager.my_files
+                "my_files": self.file_manager.my_files,
+                "downloads": self.tcp_client.active_downloads  # <--- NEW
             })
 
         @self.app.route('/select_file', methods=['POST'])
