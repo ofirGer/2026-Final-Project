@@ -28,7 +28,7 @@ class SharedFilesManager:
 
         print("Loaded shared files with chunks:")
         # We print just the keys to avoid spamming the console with huge hash lists
-        print((self.my_files))
+
 
     def analyze_file(self, path):
         """
@@ -87,3 +87,18 @@ class SharedFilesManager:
             print(f"Removed file: {filename}")
         except OSError as e:
             print(f"Error deleting file: {e}")
+
+    def get_files_summary(self):
+        """
+        Returns a lightweight version of my_files without the huge 'checksums' list.
+        Used for UDP broadcasting.
+        """
+        summary = {}
+        for filename, data in self.my_files.items():
+            summary[filename] = {
+                "size": data["size"],
+                "chunk_size": data["chunk_size"],
+                "total_chunks": data["total_chunks"]
+                # NOTE: We intentionally EXCLUDE "checksums" here
+            }
+        return summary

@@ -38,7 +38,7 @@ class Peer:
                 "peer_id": self.peer_id,
                 # --- NEW: Advertise TCP Port ---
                 "tcp_port": Protocol.TCP_PORT,
-                "files": self.file_manager.my_files
+                "files": self.file_manager.get_files_summary()
             })
             sock.sendto(message.encode(), (self.broadcast_ip, self.port))
             time.sleep(self.broadcast_interval)
