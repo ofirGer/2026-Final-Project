@@ -14,6 +14,28 @@
         .add-btn { background-color: #6f42c1; width: 100%; padding: 10px; font-size: 16px; margin-top: 15px;}
         .add-btn:hover { background-color: #5a32a3; }
         .badge { background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; }
+        /* ... existing styles ... */
+
+        /* New style for the Remove Button */
+        .remove-btn {
+            background-color: white;      /* White background */
+            color: black;                 /* Black X */
+            border: 1px solid black;      /* Black outline */
+            border-radius: 50%;           /* Circular shape */
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            line-height: 23px;            /* Vertically centers the X */
+            text-align: center;
+            padding: 0;
+            margin-left: 10px;
+            transition: background-color 0.2s; /* Smooth color change */
+        }
+
+        .remove-btn:hover {
+            background-color: #cccccc;    /* Gray background on hover */
+        }
     </style>
 </head>
 <body>
@@ -26,7 +48,14 @@
                 {% for filename, meta in my_files.items() %}
                 <li>
                     <span>{{ filename }}</span>
-                    <span class="badge">{{ meta.size }} bytes</span>
+                    <div style="display: flex; align-items: center;">
+                        <span class="badge">{{ meta.size }} bytes</span>
+
+                        <form action="/remove" method="post" style="margin: 0;">
+                            <input type="hidden" name="filename" value="{{ filename }}">
+                            <button type="submit" class="remove-btn">×</button>
+                        </form>
+                    </div>
                 </li>
                 {% endfor %}
             </ul>
@@ -55,6 +84,7 @@
         }
 
         async function updateDashboard() {
+
             try {
                 // 1. Fetch JSON data from Python
                 const response = await fetch('/api/data');
@@ -64,12 +94,22 @@
                 const myFilesList = document.getElementById('my-files-list');
                 myFilesList.innerHTML = ''; // Clear current list
 
-                // Rebuild list from JSON
+
+
+                // Rebuild "My Files" list
                 for (const [filename, meta] of Object.entries(data.my_files)) {
                     myFilesList.innerHTML += `
                         <li>
                             <span>${filename}</span>
-                            <span class="badge">${formatBytes(meta.size)}</span>
+                            <div style="display: flex; align-items: center;">
+                                <span class="badge">${formatBytes(meta.size)}</span>
+
+                                <form action="/remove" method="post" style="margin: 0;">
+                                    <input type="hidden" name="filename" value="${filename}">
+
+                                    <button type="submit" class="remove-btn" title="Remove File">×</button>
+                                </form>
+                            </div>
                         </li>`;
                 }
 

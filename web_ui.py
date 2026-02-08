@@ -55,5 +55,15 @@ class WebUI:
 
             return redirect('/')
 
+        @self.app.route('/remove', methods=['POST'])
+        def remove_file():
+            file_name = request.form.get('filename')
+
+            if(file_name):
+                self.file_manager.remove_file(file_name)
+
+            return redirect('/')
+
+
     def run(self):
         self.app.run(host="0.0.0.0", port=8000, debug=False, use_reloader=False)
