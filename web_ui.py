@@ -50,11 +50,21 @@ class WebUI:
             target_ip = request.form.get('ip')
             filename = request.form.get('filename')
 
-            threading.Thread(target=self.tcp_client.download_file,
-                             args=(target_ip, filename)).start()
+            # Find the peer who has this file to get the metadata
+            # (In a real app, we'd look up the peer_id, but here we search by IP)
+            file_metadata = None
+            for peer_id, data in self.peer.peer_table.items():
+                if data['ip'] == target_ip and filename in data['files']:
+                    file_metadata = data['files'][filename]
+                    break
+
+            if file_metadata:
+                threading.Thread(target=self.tcp_client.download_file,
+                                 args=(target_ip, filename, file_metadata)).start()
+            else:
+                print("Error: Could not find file metadata")
 
             return redirect('/')
-
         @self.app.route('/remove', methods=['POST'])
         def remove_file():
             file_name = request.form.get('filename')

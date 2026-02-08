@@ -25,7 +25,7 @@ class Peer:
         threading.Thread(target=self.cleanup_peers, daemon=True).start()
 
         # --- NEW: Start TCP Server ---
-        threading.Thread(target=self.start_tcp_server, daemon=True).start()
+
 
     def broadcast_presence(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -74,18 +74,7 @@ class Peer:
                     # print(f"Removed inactive peer: {peer_id}") # Uncomment if needed
             time.sleep(5)
 
-    # --- NEW: TCP Server Logic ---
-    def start_tcp_server(self):
-        server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        server_sock.bind(("0.0.0.0", Protocol.TCP_PORT))
-        server_sock.listen(5)
 
-        while self.running:
-            try:
-                client_sock, _ = server_sock.accept()
-                threading.Thread(target=self.handle_client, args=(client_sock,), daemon=True).start()
-            except Exception as e:
-                print(f"TCP Server error: {e}")
 
     def handle_client(self, conn):
         try:
