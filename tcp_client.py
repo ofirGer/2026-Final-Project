@@ -5,6 +5,7 @@ import hashlib
 import time
 
 
+PACKET_SIZE = 4096
 class TCPClient:
     def __init__(self, file_manager, download_folder="downloads"):
         self.file_manager = file_manager
@@ -43,7 +44,7 @@ class TCPClient:
             # Read the full JSON body
             received_data = b""
             while len(received_data) < data_len:
-                packet = sock.recv(4096)
+                packet = sock.recv(PACKET_SIZE)
                 if not packet: break
                 received_data += packet
 
@@ -112,7 +113,7 @@ class TCPClient:
 
             received_data = b""
             while len(received_data) < chunk_size:
-                packet = sock.recv(4096)
+                packet = sock.recv(PACKET_SIZE)
                 if not packet:
                     break
                 received_data += packet

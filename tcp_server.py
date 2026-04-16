@@ -31,43 +31,43 @@ class TCPServer:
 
         # Inside tcp_server.py -> handle_client method
 
-        def handle_client(self, conn):
-            try:
-                data = conn.recv(1024).decode()
-                if not data:
-                    return
+    def handle_client(self, conn):
+        try:
+            data = conn.recv(1024).decode()
+            if not data:
+                return
 
-                request = json.loads(data)
-                req_type = request.get("type")  # We will use "type" to distinguish requests
-                filename = request.get("filename")
+            request = json.loads(data)
+            req_type = request.get("type")  # We will use "type" to distinguish requests
+            filename = request.get("filename")
 
-                if filename not in self.file_manager.my_files:
-                    return
+            if filename not in self.file_manager.my_files:
+                return
 
                 # --- NEW: Handle Metadata Request ---
-                if req_type == "METADATA":
-                    # Send the FULL metadata (including checksums)
-                    file_data = self.file_manager.my_files[filename]
-                    # Serialize to JSON and send
-                    response = json.dumps(file_data).encode()
-                    # Send length first (because metadata might be huge!)
-                    conn.sendall(f"{len(response):<10}".encode())
-                    conn.sendall(response)
-                    print(f"Sent metadata for {filename}")
-                    return
+            if req_type == "METADATA":
+                # Send the FULL metadata (including checksums)
+                file_data = self.file_manager.my_files[filename]
+                # Serialize to JSON and send
+                response = json.dumps(file_data).encode()
+                # Send length first (because metadata might be huge!)
+                conn.sendall(f"{len(response):<10}".encode())
+                conn.sendall(response)
+                print(f"Sent metadata for {filename}")
+                return
                 # ------------------------------------
 
-                # Existing Chunk Logic (Standardize to look for "CHUNK" type or default)
-                chunk_index = request.get("chunk_index")
-                if chunk_index is not None:
-                    chunk_data = self.read_chunk(filename, chunk_index)
-                    if chunk_data:
-                        conn.sendall(chunk_data)
+            # Existing Chunk Logic (Standardize to look for "CHUNK" type or default)
+            chunk_index = request.get("chunk_index")
+            if chunk_index is not None:
+                chunk_data = self.read_chunk(filename, chunk_index)
+                if chunk_data:
+                    conn.sendall(chunk_data)
 
-            except Exception as e:
-                print(f"Error handling client: {e}")
-            finally:
-                conn.close()
+        except Exception as e:
+            print(f"Error handling client: {e}")
+        finally:
+            conn.close()
 
     def read_chunk(self, filename, chunk_index):
         # We need the real path on the disk
