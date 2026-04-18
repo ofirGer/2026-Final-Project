@@ -3,7 +3,8 @@ import os
 import json
 import hashlib
 import time
-
+import threading
+from concurrent.futures import ThreadPoolExecutor
 
 PACKET_SIZE = 4096
 class TCPClient:
@@ -16,35 +17,33 @@ class TCPClient:
         # Format: { "movie.mp4": 45 } (percent)
         self.active_downloads = {}
 
+        # Max number of threads downloading together
+        self.MAX_WORKERS = 5
+
         if not os.path.exists(self.download_folder):
             os.makedirs(self.download_folder)
 
-    def fetch_metadata(self, ip, port, filename):
+    def fetch_metadata(self, ip, port, file_id):
         """
         Connects to a peer via TCP to get the full file metadata (including hashes).
         This is necessary because the UDP broadcast only sends a summary.
         """
         try:
-            print(f"Fetching metadata for {filename} from {ip}...")
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(5)  # 5 second timeout
+            sock.settimeout(5)
             sock.connect((ip, port))
 
-            # Request Metadata
-            req = json.dumps({"type": "METADATA", "filename": filename})
+            # Request Metadata by file_id
+            req = json.dumps({"type": "METADATA", "file_id": file_id})
             sock.sendall(req.encode())
 
-            # Read the length header (first 10 bytes)
             header = sock.recv(10).decode().strip()
-            if not header:
-                return None
+            if not header: return None
 
             data_len = int(header)
-
-            # Read the full JSON body
             received_data = b""
             while len(received_data) < data_len:
-                packet = sock.recv(PACKET_SIZE)
+                packet = sock.recv(4096)
                 if not packet: break
                 received_data += packet
 
@@ -54,73 +53,86 @@ class TCPClient:
             print(f"Error fetching metadata: {e}")
             return None
 
-    def download_file(self, target_ip, filename, file_metadata, port=50001):
-        print(f"Starting download: {filename} from {target_ip}")
+    def download_file(self, peers_list, file_id, filename, file_metadata, port=50001):
+        """
+        peers_list: רשימה של כתובות IP של כל מי שיש לו את הקובץ (למשל ['192.168.1.5', '192.168.1.9'])
+        """
+        print(f"Starting SWARM download: {filename} from {len(peers_list)} peers")
+        self.active_downloads[file_id] = {"filename": filename, "progress": 0}
 
-        # 1. Initialize progress
-        self.active_downloads[filename] = 0
-
-        # 2. Get the full metadata (We need the hashes!)
+        # 1. משיכת מטא-דאטה חסר (Hashes) מאחד העמיתים
         if "checksums" not in file_metadata:
-            full_metadata = self.fetch_metadata(target_ip, port, filename)
+            full_metadata = None
+            for ip in peers_list:
+                full_metadata = self.fetch_metadata(ip, port, file_id)  # <-- Pass file_id
+                if full_metadata: break
+
             if not full_metadata:
-                print("CRITICAL: Could not fetch metadata. Aborting download.")
-                del self.active_downloads[filename]
+                del self.active_downloads[file_id]
                 return
             checksums = full_metadata["checksums"]
         else:
             checksums = file_metadata["checksums"]
 
+            # ... (keep the rest of the file setup logic exactly the same) ...
         total_chunks = file_metadata['total_chunks']
         chunk_size = file_metadata['chunk_size']
-
         save_path = os.path.join(self.download_folder, filename)
 
-        # 3. Create the file structure
         with open(save_path, 'wb') as f:
             f.truncate(file_metadata['size'])
 
-        # 4. Download Loop
-        for i in range(total_chunks):
-            success = self.get_chunk(target_ip, port, filename, i, chunk_size, checksums[i], save_path)
-            if not success:
-                print(f"Failed to download chunk {i}. Aborting.")
-                break
+        chunks_to_download = list(range(total_chunks))
+        progress_lock = threading.Lock()
+        completed_chunks = 0
 
-            # Update progress
-            progress_percent = int(((i + 1) / total_chunks) * 100)
-            self.active_downloads[filename] = progress_percent
+        # A function inside download_file, enables it to use the download_file variables
+        #  Has a single use inside download_file
+        def download_worker(chunk_index):
+            # Do not create a new local variable called completed_chunks. Use the one from the parent function outside.
+            nonlocal completed_chunks
+            peer_ip = peers_list[chunk_index % len(peers_list)]
 
-        print(f"Download complete: {filename}")
+            # <-- Pass file_id to get_chunk
+            success = self.get_chunk(peer_ip, port, file_id, chunk_index, chunk_size, checksums[chunk_index], save_path)
 
-        # 5. Finalize
-        self.active_downloads[filename] = 100
-        self.file_manager.load_shared_files()  # Refresh so we start seeding
+            if success:
+                with progress_lock:
+                    completed_chunks += 1
+                    progress_percent = int((completed_chunks / total_chunks) * 100)
+                    self.active_downloads[file_id]["progress"] = progress_percent
 
-        # Keep the 100% bar for a few seconds then clear it
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=self.MAX_WORKERS) as executor:
+            executor.map(download_worker, chunks_to_download)
+
+        self.active_downloads[file_id]["progress"] = 100
+        self.file_manager.load_shared_files()
+
         time.sleep(5)
-        if filename in self.active_downloads:
-            del self.active_downloads[filename]
+        if file_id in self.active_downloads:
+            del self.active_downloads[file_id]
 
-    def get_chunk(self, ip, port, filename, chunk_index, chunk_size, expected_hash, save_path):
+    def get_chunk(self, ip, port, file_id, chunk_index, chunk_size, expected_hash, save_path):
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(5)
             sock.connect((ip, port))
 
-            # Standard Chunk Request
-            request = json.dumps({"type": "CHUNK", "filename": filename, "chunk_index": chunk_index})
+            # Request Chunk by file_id
+            request = json.dumps({"type": "CHUNK", "file_id": file_id, "chunk_index": chunk_index})
             sock.sendall(request.encode())
 
+            # ... (keep the rest of get_chunk exactly the same) ...
             received_data = b""
             while len(received_data) < chunk_size:
-                packet = sock.recv(PACKET_SIZE)
-                if not packet:
-                    break
+                packet = sock.recv(4096)
+                if not packet: break
                 received_data += packet
 
             sock.close()
 
-            # Verify Hash
+            import hashlib
             sha256 = hashlib.sha256()
             sha256.update(received_data)
             if sha256.hexdigest() == expected_hash:
@@ -128,10 +140,7 @@ class TCPClient:
                     f.seek(chunk_index * chunk_size)
                     f.write(received_data)
                 return True
-            else:
-                print(f"HASH MISMATCH for chunk {chunk_index}")
-                return False
+            return False
 
         except Exception as e:
-            print(f"Error downloading chunk {chunk_index}: {e}")
             return False

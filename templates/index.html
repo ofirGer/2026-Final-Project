@@ -69,18 +69,18 @@
                 // Track if we found any files
                 let foundFiles = false;
 
+                // FIXED: Iterate using file_id as the key, and read meta.filename
                 for (const [peerId, peerData] of Object.entries(data.peers)) {
-                    for (const [filename, meta] of Object.entries(peerData.files)) {
+                    for (const [file_id, meta] of Object.entries(peerData.files)) {
                         foundFiles = true;
                         networkList.innerHTML += `
                             <li>
                                 <div>
-                                    <strong>${filename}</strong> <br>
+                                    <strong>${meta.filename}</strong> <br>
                                     <small style="color: #666;">Size: ${formatBytes(meta.size)} | Peer: ${peerData.ip}</small>
                                 </div>
                                 <form action="/download" method="post">
-                                    <input type="hidden" name="ip" value="${peerData.ip}">
-                                    <input type="hidden" name="filename" value="${filename}">
+                                    <input type="hidden" name="file_id" value="${file_id}">
                                     <button type="submit" class="btn-success">Download ⬇️</button>
                                 </form>
                             </li>`;
@@ -95,21 +95,22 @@
                 const myFilesList = document.getElementById('my-files-list');
                 myFilesList.innerHTML = '';
 
-                for (const [filename, meta] of Object.entries(data.my_files)) {
+                // FIXED: Iterate using file_id and set the hidden input correctly
+                for (const [file_id, meta] of Object.entries(data.my_files)) {
                     myFilesList.innerHTML += `
                         <li>
-                            <span>${filename}</span>
+                            <span>${meta.filename}</span>
                             <div style="display: flex; align-items: center;">
                                 <span class="badge">${formatBytes(meta.size)}</span>
                                 <form action="/remove" method="post" style="margin: 0;">
-                                    <input type="hidden" name="filename" value="${filename}">
+                                    <input type="hidden" name="file_id" value="${file_id}">
                                     <button type="submit" class="remove-btn" title="Remove File">×</button>
                                 </form>
                             </div>
                         </li>`;
                 }
 
-                // 3. Update Active Downloads List (NEW)
+                // 3. Update Active Downloads List
                 const downloadList = document.getElementById('download-list');
                 downloadList.innerHTML = '';
 
@@ -118,15 +119,16 @@
                 if (Object.keys(downloads).length === 0) {
                      downloadList.innerHTML = '<li style="color: #666; justify-content: center;">No active downloads</li>';
                 } else {
-                    for (const [filename, percent] of Object.entries(downloads)) {
+                    // FIXED: Handle the new active_downloads dictionary structure { file_id: {filename: "...", progress: 45} }
+                    for (const [file_id, downloadInfo] of Object.entries(downloads)) {
                         downloadList.innerHTML += `
                             <li style="display: block;">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                    <strong>${filename}</strong>
-                                    <span>${percent}%</span>
+                                    <strong>${downloadInfo.filename}</strong>
+                                    <span>${downloadInfo.progress}%</span>
                                 </div>
                                 <div class="progress-container">
-                                    <div class="progress-bar" style="width: ${percent}%;"></div>
+                                    <div class="progress-bar" style="width: ${downloadInfo.progress}%;"></div>
                                 </div>
                             </li>`;
                     }
@@ -163,13 +165,13 @@
 
     <div class="container">
         <ul id="my-files-list">
-             {% for filename, meta in my_files.items() %}
+             {% for file_id, meta in my_files.items() %}
              <li>
-                 <span>{{ filename }}</span>
+                 <span>{{ meta.filename }}</span>
                  <div style="display: flex; align-items: center;">
                      <span class="badge">{{ meta.size }} bytes</span>
                      <form action="/remove" method="post" style="margin: 0;">
-                         <input type="hidden" name="filename" value="{{ filename }}">
+                         <input type="hidden" name="file_id" value="{{ file_id }}">
                          <button type="submit" class="remove-btn">×</button>
                      </form>
                  </div>

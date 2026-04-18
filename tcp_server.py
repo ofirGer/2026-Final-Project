@@ -31,36 +31,32 @@ class TCPServer:
 
         # Inside tcp_server.py -> handle_client method
 
+        # Inside tcp_server.py -> handle_client method
     def handle_client(self, conn):
         try:
             data = conn.recv(1024).decode()
-            if not data:
-                return
+            if not data: return
 
             request = json.loads(data)
-            req_type = request.get("type")  # We will use "type" to distinguish requests
-            filename = request.get("filename")
+            req_type = request.get("type")
+            file_id = request.get("file_id")  # <--- CHANGED: Ask by ID
 
-            if filename not in self.file_manager.my_files:
+            # Validate the file exists
+            if file_id not in self.file_manager.my_files:
                 return
 
-                # --- NEW: Handle Metadata Request ---
+            filename = self.file_manager.my_files[file_id]["filename"]
+
             if req_type == "METADATA":
-                # Send the FULL metadata (including checksums)
-                file_data = self.file_manager.my_files[filename]
-                # Serialize to JSON and send
+                file_data = self.file_manager.my_files[file_id]  # <--- CHANGED
                 response = json.dumps(file_data).encode()
-                # Send length first (because metadata might be huge!)
                 conn.sendall(f"{len(response):<10}".encode())
                 conn.sendall(response)
-                print(f"Sent metadata for {filename}")
                 return
-                # ------------------------------------
 
-            # Existing Chunk Logic (Standardize to look for "CHUNK" type or default)
             chunk_index = request.get("chunk_index")
             if chunk_index is not None:
-                chunk_data = self.read_chunk(filename, chunk_index)
+                chunk_data = self.read_chunk(filename, chunk_index)  # Still read physical file by name
                 if chunk_data:
                     conn.sendall(chunk_data)
 

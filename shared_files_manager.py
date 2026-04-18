@@ -1,16 +1,14 @@
 import os
 import shutil
-import hashlib  # <--- NEW: Needed for calculating the "fingerprints"
-import math
+import hashlib
 
 
 class SharedFilesManager:
-    # 64KB is a standard chunk size for small-medium files
     CHUNK_SIZE = 65536
 
     def __init__(self, shared_folder="shared"):
         self.shared_folder = shared_folder
-        self.my_files = {}
+        self.my_files = {}  # Key: file_id (hash), Value: metadata dictionary
         self.load_shared_files()
 
     def load_shared_files(self):
@@ -23,82 +21,78 @@ class SharedFilesManager:
         for filename in os.listdir(self.shared_folder):
             path = os.path.join(self.shared_folder, filename)
             if os.path.isfile(path):
-                # <--- CHANGED: We now call a smart function instead of just getting size
-                self.my_files[filename] = self.analyze_file(path)
+                file_id, metadata = self.analyze_file(path)
+                if file_id:
+                    self.my_files[file_id] = metadata
 
-        print("Loaded shared files with chunks:")
-        # We print just the keys to avoid spamming the console with huge hash lists
-
+        print("Loaded shared files IDs:")
+        print(list(self.my_files.keys()))
 
     def analyze_file(self, path):
-        """
-        Reads the file in chunks and calculates SHA-256 hashes.
-        Returns a dictionary with all file metadata.
-        """
         file_size = os.path.getsize(path)
         hashes = []
+        filename = os.path.basename(path)
 
         try:
             with open(path, 'rb') as f:
                 while True:
-                    # Read exactly one chunk
                     chunk = f.read(self.CHUNK_SIZE)
                     if not chunk:
-                        break  # End of file
+                        break
 
-                    # Calculate hash for this specific chunk
                     sha256 = hashlib.sha256()
                     sha256.update(chunk)
                     hashes.append(sha256.hexdigest())
 
-            return {
+            # --- NEW: Calculate the Master "Info Hash" (file_id) ---
+            # We hash all the smaller hashes together to create one unique ID
+            master_hash = hashlib.sha256("".join(hashes).encode()).hexdigest()
+
+            metadata = {
+                "filename": filename,  # Keep the name for humans to read
                 "size": file_size,
                 "chunk_size": self.CHUNK_SIZE,
                 "total_chunks": len(hashes),
-                "checksums": hashes  # The list of fingerprints
+                "checksums": hashes
             }
+            return master_hash, metadata
+
         except Exception as e:
             print(f"Error analyzing file {path}: {e}")
-            return {}
+            return None, None
 
     def add_file(self, source_path):
         if not os.path.isfile(source_path):
             print("Invalid file path")
             return
-
         filename = os.path.basename(source_path)
         destination = os.path.join(self.shared_folder, filename)
-
         shutil.copy(source_path, destination)
-        print(f"Added file: {filename}")
-
         self.load_shared_files()
 
-    def remove_file(self, filename):
-        path = os.path.join(self.shared_folder, filename)
-
-        if filename not in self.my_files:
+    def remove_file(self, file_id):
+        # We now delete by file_id instead of filename
+        if file_id not in self.my_files:
             print("File not shared")
             return
 
+        filename = self.my_files[file_id]["filename"]
+        path = os.path.join(self.shared_folder, filename)
+
         try:
             os.remove(path)
-            del self.my_files[filename]
+            del self.my_files[file_id]
             print(f"Removed file: {filename}")
         except OSError as e:
             print(f"Error deleting file: {e}")
 
     def get_files_summary(self):
-        """
-        Returns a lightweight version of my_files without the huge 'checksums' list.
-        Used for UDP broadcasting.
-        """
         summary = {}
-        for filename, data in self.my_files.items():
-            summary[filename] = {
+        for file_id, data in self.my_files.items():
+            summary[file_id] = {
+                "filename": data["filename"],  # UI needs to know the name
                 "size": data["size"],
                 "chunk_size": data["chunk_size"],
                 "total_chunks": data["total_chunks"]
-                # NOTE: We intentionally EXCLUDE "checksums" here
             }
         return summary

@@ -48,33 +48,32 @@ class WebUI:
 
         @self.app.route('/download', methods=['POST'])
         def download():
-            target_ip = request.form.get('ip')
-            filename = request.form.get('filename')
+            file_id = request.form.get('file_id')  # Get ID, not name
 
-            # Find the peer who has this file to get the metadata
-            # (In a real app, we'd look up the peer_id, but here we search by IP)
+            peers_with_file = []
             file_metadata = None
-            for peer_id, data in self.peer.peer_table.items():
-                if data['ip'] == target_ip and filename in data['files']:
-                    file_metadata = data['files'][filename]
-                    break
+            filename = None
 
-            if file_metadata:
+            for peer_id, data in self.peer.peer_table.items():
+                if file_id in data['files']:  # Check if they have the ID
+                    peers_with_file.append(data['ip'])
+                    if file_metadata is None:
+                        file_metadata = data['files'][file_id]
+                        filename = file_metadata['filename']
+
+            if peers_with_file and file_metadata:
+                # Trigger download with file_id
                 threading.Thread(target=self.tcp_client.download_file,
-                                 args=(target_ip, filename, file_metadata)).start()
-            else:
-                print("Error: Could not find file metadata")
+                                 args=(peers_with_file, file_id, filename, file_metadata)).start()
 
             return redirect('/')
+
         @self.app.route('/remove', methods=['POST'])
         def remove_file():
-            file_name = request.form.get('filename')
-
-            if(file_name):
-                self.file_manager.remove_file(file_name)
-
+            file_id = request.form.get('file_id')  # Remove by ID
+            if (file_id):
+                self.file_manager.remove_file(file_id)
             return redirect('/')
-
 
     def run(self):
         self.app.run(host="0.0.0.0", port=8000, debug=False, use_reloader=False)
