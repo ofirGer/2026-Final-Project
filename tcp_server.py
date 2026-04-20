@@ -2,6 +2,7 @@ import socket
 import threading
 import os
 import json
+from security import SecureConnection
 
 
 class TCPServer:
@@ -32,33 +33,39 @@ class TCPServer:
         # Inside tcp_server.py -> handle_client method
 
         # Inside tcp_server.py -> handle_client method
+
     def handle_client(self, conn):
         try:
-            data = conn.recv(1024).decode()
+            # --- 1. INITIALIZE ENCRYPTION & HANDSHAKE ---
+            secure_conn = SecureConnection(conn, is_client=False)
+            secure_conn.handshake()
+
+            # --- 2. RECEIVE ENCRYPTED REQUEST ---
+            data = secure_conn.recv_encrypted().decode()
             if not data: return
 
             request = json.loads(data)
             req_type = request.get("type")
-            file_id = request.get("file_id")  # <--- CHANGED: Ask by ID
+            file_id = request.get("file_id")
 
-            # Validate the file exists
             if file_id not in self.file_manager.my_files:
                 return
 
             filename = self.file_manager.my_files[file_id]["filename"]
 
+            # --- 3. SEND ENCRYPTED RESPONSES ---
             if req_type == "METADATA":
-                file_data = self.file_manager.my_files[file_id]  # <--- CHANGED
+                file_data = self.file_manager.my_files[file_id]
                 response = json.dumps(file_data).encode()
-                conn.sendall(f"{len(response):<10}".encode())
-                conn.sendall(response)
+                secure_conn.send_encrypted(response)  # <--- Encrypted
+                print(f"Sent encrypted metadata for {filename}")
                 return
 
             chunk_index = request.get("chunk_index")
             if chunk_index is not None:
-                chunk_data = self.read_chunk(filename, chunk_index)  # Still read physical file by name
+                chunk_data = self.read_chunk(filename, chunk_index)
                 if chunk_data:
-                    conn.sendall(chunk_data)
+                    secure_conn.send_encrypted(chunk_data)  # <--- Encrypted
 
         except Exception as e:
             print(f"Error handling client: {e}")

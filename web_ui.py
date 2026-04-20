@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, jsonify
+# Change this line:
+from flask import Flask, render_template, request, redirect, jsonify, send_from_directory
 import threading
 import os
 import tkinter as tk
@@ -74,6 +75,19 @@ class WebUI:
             if (file_id):
                 self.file_manager.remove_file(file_id)
             return redirect('/')
+
+        @self.app.route('/open/<file_id>')
+        def open_file(file_id):
+            # Check if the file is actually in our shared files
+            if file_id in self.file_manager.my_files:
+                filename = self.file_manager.my_files[file_id]['filename']
+
+                # Send the physical file from the shared folder to the browser
+                return send_from_directory(
+                    os.path.abspath(self.file_manager.shared_folder),
+                    filename
+                )
+            return "File not found", 404
 
     def run(self):
         self.app.run(host="0.0.0.0", port=8000, debug=False, use_reloader=False)

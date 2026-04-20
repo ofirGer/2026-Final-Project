@@ -99,7 +99,7 @@
                 for (const [file_id, meta] of Object.entries(data.my_files)) {
                     myFilesList.innerHTML += `
                         <li>
-                            <span>${meta.filename}</span>
+                            <span><a href="/open/${file_id}" target="_blank" style="text-decoration: none; color: #007bff; font-weight: bold;">${meta.filename}</a></span>
                             <div style="display: flex; align-items: center;">
                                 <span class="badge">${formatBytes(meta.size)}</span>
                                 <form action="/remove" method="post" style="margin: 0;">
@@ -167,7 +167,7 @@
         <ul id="my-files-list">
              {% for file_id, meta in my_files.items() %}
              <li>
-                 <span>{{ meta.filename }}</span>
+                 <span><a href="/open/{{ file_id }}" target="_blank" style="text-decoration: none; color: #007bff; font-weight: bold;">{{ meta.filename }}</a></span>
                  <div style="display: flex; align-items: center;">
                      <span class="badge">{{ meta.size }} bytes</span>
                      <form action="/remove" method="post" style="margin: 0;">

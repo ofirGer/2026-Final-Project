@@ -8,7 +8,7 @@ from protocol import Protocol
 
 
 class Peer:
-    def __init__(self, file_manager, broadcast_ip="192.168.1.255", port=50000):
+    def __init__(self, file_manager, broadcast_ip="172.16.255.255", port=50000):
         self.peer_id = str(uuid.uuid4())
         self.broadcast_ip = broadcast_ip
         self.port = port

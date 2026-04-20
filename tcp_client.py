@@ -5,6 +5,7 @@ import hashlib
 import time
 import threading
 from concurrent.futures import ThreadPoolExecutor
+from security import SecureConnection
 
 PACKET_SIZE = 4096
 class TCPClient:
@@ -24,31 +25,25 @@ class TCPClient:
             os.makedirs(self.download_folder)
 
     def fetch_metadata(self, ip, port, file_id):
-        """
-        Connects to a peer via TCP to get the full file metadata (including hashes).
-        This is necessary because the UDP broadcast only sends a summary.
-        """
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(5)
             sock.connect((ip, port))
 
-            # Request Metadata by file_id
+            # --- 1. HANDSHAKE ---
+            secure_conn = SecureConnection(sock, is_client=True)
+            secure_conn.handshake()
+
+            # --- 2. ENCRYPT & SEND REQUEST ---
             req = json.dumps({"type": "METADATA", "file_id": file_id})
-            sock.sendall(req.encode())
+            secure_conn.send_encrypted(req.encode())
 
-            header = sock.recv(10).decode().strip()
-            if not header: return None
-
-            data_len = int(header)
-            received_data = b""
-            while len(received_data) < data_len:
-                packet = sock.recv(4096)
-                if not packet: break
-                received_data += packet
+            # --- 3. RECEIVE & DECRYPT METADATA ---
+            # No more reading weird 10-byte headers! SecureConnection handles sizes automatically.
+            received_data = secure_conn.recv_encrypted()
 
             sock.close()
-            return json.loads(received_data)
+            return json.loads(received_data.decode())
         except Exception as e:
             print(f"Error fetching metadata: {e}")
             return None
@@ -119,20 +114,20 @@ class TCPClient:
             sock.settimeout(5)
             sock.connect((ip, port))
 
-            # Request Chunk by file_id
-            request = json.dumps({"type": "CHUNK", "file_id": file_id, "chunk_index": chunk_index})
-            sock.sendall(request.encode())
+            # --- 1. HANDSHAKE ---
+            secure_conn = SecureConnection(sock, is_client=True)
+            secure_conn.handshake()
 
-            # ... (keep the rest of get_chunk exactly the same) ...
-            received_data = b""
-            while len(received_data) < chunk_size:
-                packet = sock.recv(4096)
-                if not packet: break
-                received_data += packet
+            # --- 2. ENCRYPT & SEND REQUEST ---
+            request = json.dumps({"type": "CHUNK", "file_id": file_id, "chunk_index": chunk_index})
+            secure_conn.send_encrypted(request.encode())
+
+            # --- 3. RECEIVE & DECRYPT CHUNK ---
+            received_data = secure_conn.recv_encrypted()
 
             sock.close()
 
-            import hashlib
+            # Verify Hash
             sha256 = hashlib.sha256()
             sha256.update(received_data)
             if sha256.hexdigest() == expected_hash:
@@ -140,7 +135,9 @@ class TCPClient:
                     f.seek(chunk_index * chunk_size)
                     f.write(received_data)
                 return True
-            return False
+            else:
+                print(f"HASH MISMATCH for chunk {chunk_index}")
+                return False
 
         except Exception as e:
             return False
