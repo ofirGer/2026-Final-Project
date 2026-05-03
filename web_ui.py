@@ -49,23 +49,26 @@ class WebUI:
 
         @self.app.route('/download', methods=['POST'])
         def download():
-            file_id = request.form.get('file_id')  # Get ID, not name
+            file_id = request.form.get('file_id')  # אנחנו מקבלים מזהה ייחודי במקום שם
 
             peers_with_file = []
             file_metadata = None
             filename = None
 
+            # חיפוש בכל טבלת העמיתים: מי מחזיק ב-ID הזה?
             for peer_id, data in self.peer.peer_table.items():
-                if file_id in data['files']:  # Check if they have the ID
+                if file_id in data['files']:
                     peers_with_file.append(data['ip'])
                     if file_metadata is None:
                         file_metadata = data['files'][file_id]
                         filename = file_metadata['filename']
 
+            # אם מצאנו את הקובץ אצל משתמשים ברשת, מתחילים להוריד מכולם במקביל!
             if peers_with_file and file_metadata:
-                # Trigger download with file_id
                 threading.Thread(target=self.tcp_client.download_file,
                                  args=(peers_with_file, file_id, filename, file_metadata)).start()
+            else:
+                print("Error: Could not find any peers with this file ID")
 
             return redirect('/')
 

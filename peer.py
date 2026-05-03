@@ -73,31 +73,3 @@ class Peer:
                     del self.peer_table[peer_id]
                     # print(f"Removed inactive peer: {peer_id}") # Uncomment if needed
             time.sleep(5)
-
-
-
-    def handle_client(self, conn):
-        try:
-            data = conn.recv(1024)
-            cmd, filename = Protocol.parse_message(data)
-
-            if cmd == Protocol.CMD_DOWNLOAD:
-                file_path = self.file_manager.get_file_path(filename)
-
-                if file_path and os.path.exists(file_path):
-                    filesize = os.path.getsize(file_path)
-                    conn.send(Protocol.prepare_response_exists(filesize))
-
-                    conn.recv(1024)  # Wait for Ack
-
-                    with open(file_path, "rb") as f:
-                        while True:
-                            bytes_read = f.read(Protocol.BUFFER_SIZE)
-                            if not bytes_read: break
-                            conn.sendall(bytes_read)
-                else:
-                    conn.send(Protocol.prepare_response_error("File Not Found"))
-        except Exception as e:
-            print(f"Transfer error: {e}")
-        finally:
-            conn.close()

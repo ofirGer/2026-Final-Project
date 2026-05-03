@@ -19,6 +19,9 @@ class SharedFilesManager:
             os.makedirs(self.shared_folder)
 
         for filename in os.listdir(self.shared_folder):
+            if filename.endswith(".part"):
+                continue
+
             path = os.path.join(self.shared_folder, filename)
             if os.path.isfile(path):
                 file_id, metadata = self.analyze_file(path)
