@@ -3,56 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P2P File Sharer</title>
+    <title>Nexus P2P Sharer</title>
     <style>
-        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f4f9; }
-        h1, h2 { color: #333; }
-        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        :root {
+            --bg-color: #f3f4f6;
+            --surface-color: #ffffff;
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --success-color: #10b981;
+            --success-hover: #059669;
+            --danger-color: #ef4444;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --border-radius: 12px;
+        }
 
-        /* List Styles */
-        ul { list-style-type: none; padding: 0; }
-        li { background: #fff; border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
-        li:last-child { border-bottom: none; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+        }
+
+        /* Top Navigation Bar */
+        .navbar {
+            background-color: var(--surface-color);
+            padding: 1rem 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Main Layout Grid */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Lists */
+        ul { list-style: none; padding: 0; margin: 0; }
+
+        li {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        li:last-child { border-bottom: none; padding-bottom: 0; }
+
+        .file-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .file-name { font-weight: 600; color: var(--text-main); text-decoration: none; }
+        .file-name:hover { color: var(--primary-color); text-decoration: underline; }
+        .file-meta { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; display: flex; gap: 10px; align-items: center; }
+
+        /* Badges */
+        .badge {
+            background: #f3f4f6;
+            color: var(--text-muted);
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge.peer-badge {
+            background: #e0e7ff;
+            color: var(--primary-color);
+        }
+
+        .badge.swarm-badge {
+            background: #dcfce7;
+            color: var(--success-hover);
+        }
 
         /* Buttons */
-        button { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
-        .btn-primary { background-color: #007bff; color: white; }
-        .btn-success { background-color: #28a745; color: white; }
-        .btn-primary:hover { background-color: #0056b3; }
-        .btn-success:hover { background-color: #218838; }
-
-        /* Remove Button Style (Black Outline) */
-        .remove-btn {
-            background-color: white;
-            color: black;
-            border: 1px solid black;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
             cursor: pointer;
-            font-weight: bold;
-            line-height: 23px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
+
+        .btn-success { background-color: var(--success-color); color: white; }
+        .btn-success:hover { background-color: var(--success-hover); transform: translateY(-1px); }
+
+        .btn-remove {
+            background-color: transparent;
+            color: var(--danger-color);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+        }
+        .btn-remove:hover { background-color: #fee2e2; border-color: #fca5a5; }
+
+        /* Progress Bars */
+        .progress-wrapper { width: 100%; margin-top: 10px; }
+        .progress-header { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 5px; font-weight: 600; }
+        .progress-container {
+            width: 100%;
+            background-color: var(--border-color);
+            border-radius: 999px;
+            height: 12px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.4s ease, background-color 0.4s ease;
+            background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent);
+            background-size: 1rem 1rem;
+            animation: progress-animation 1s linear infinite;
+        }
+
+        @keyframes progress-animation {
+            from { background-position: 1rem 0; }
+            to { background-position: 0 0; }
+        }
+
+        .empty-state {
+            color: var(--text-muted);
             text-align: center;
-            padding: 0;
-            margin-left: 10px;
-            transition: background-color 0.2s;
+            padding: 20px 0;
+            font-style: italic;
         }
-        .remove-btn:hover {
-            background-color: #cccccc;
-        }
-
-        .badge { background: #e2e6ea; padding: 4px 8px; border-radius: 12px; font-size: 0.85em; }
-
-        /* Progress Bar Styles */
-        .progress-container { width: 100%; background-color: #eee; border-radius: 5px; height: 10px; margin-top: 5px; }
-        .progress-bar { background-color: #28a745; height: 100%; border-radius: 5px; transition: width 0.5s ease, background-color 0.5s ease; }
     </style>
     <script>
         function formatBytes(bytes, decimals = 2) {
             if (!+bytes) return '0 Bytes';
             const k = 1024;
             const dm = decimals < 0 ? 0 : decimals;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
         }
@@ -62,85 +205,114 @@
                 const response = await fetch('/api/data');
                 const data = await response.json();
 
-                // For Debugging: Open your browser's Developer Tools (F12) -> Console to see the raw data!
-                // console.log("Current Downloads:", data.downloads);
+                // 1. PROCESS AND AGGREGATE NETWORK FILES (THE SWARM LOGIC)
+                const networkFiles = {}; // Structure: { file_id: { meta, peers: [] } }
 
-                // 1. Update Network Files List
+                for (const [peerId, peerData] of Object.entries(data.peers)) {
+                    for (const [file_id, meta] of Object.entries(peerData.files)) {
+                        // Skip files that we are already sharing ourselves!
+                        if (data.my_files[file_id]) continue;
+
+                        if (!networkFiles[file_id]) {
+                            networkFiles[file_id] = { meta: meta, peers: new Set() };
+                        }
+                        networkFiles[file_id].peers.add(peerData.ip);
+                    }
+                }
+
+                // Render Network Files List
                 const networkList = document.getElementById('network-files-list');
                 networkList.innerHTML = '';
                 let foundFiles = false;
 
-                for (const [peerId, peerData] of Object.entries(data.peers)) {
-                    for (const [file_id, meta] of Object.entries(peerData.files)) {
-                        foundFiles = true;
-                        networkList.innerHTML += `
-                            <li>
-                                <div>
-                                    <strong>${meta.filename}</strong> <br>
-                                    <small style="color: #666;">Size: ${formatBytes(meta.size)} | Peer: ${peerData.ip}</small>
-                                </div>
-                                <form action="/download" method="post">
-                                    <input type="hidden" name="file_id" value="${file_id}">
-                                    <button type="submit" class="btn-success">Download ⬇️</button>
-                                </form>
-                            </li>`;
+                for (const [file_id, fileData] of Object.entries(networkFiles)) {
+                    foundFiles = true;
+                    const peerCount = fileData.peers.size;
+
+                    // Logic to display Swarm badge if more than 1 peer has the file
+                    let peerBadge = `<span class="badge peer-badge">1 Peer</span>`;
+                    if (peerCount > 1) {
+                        peerBadge = `<span class="badge swarm-badge">⚡ ${peerCount} Peers (Swarm)</span>`;
                     }
-                }
 
-                if (!foundFiles) {
-                    networkList.innerHTML = '<li style="color: #666; justify-content: center;">No files found on network yet.</li>';
-                }
-
-                // 2. Update My Shared Files List
-                const myFilesList = document.getElementById('my-files-list');
-                myFilesList.innerHTML = '';
-
-                for (const [file_id, meta] of Object.entries(data.my_files)) {
-                    myFilesList.innerHTML += `
+                    networkList.innerHTML += `
                         <li>
-                            <span><a href="/open/${file_id}" target="_blank" style="text-decoration: none; color: #007bff; font-weight: bold;">${meta.filename}</a></span>
-                            <div style="display: flex; align-items: center;">
-                                <span class="badge">${formatBytes(meta.size)}</span>
-                                <form action="/remove" method="post" style="margin: 0;">
-                                    <input type="hidden" name="file_id" value="${file_id}">
-                                    <button type="submit" class="remove-btn" title="Remove File">×</button>
-                                </form>
+                            <div class="file-info">
+                                <span class="file-name">${fileData.meta.filename}</span>
+                                <div class="file-meta">
+                                    <span class="badge">${formatBytes(fileData.meta.size)}</span>
+                                    ${peerBadge}
+                                </div>
                             </div>
+                            <form action="/download" method="post" style="margin:0;">
+                                <input type="hidden" name="file_id" value="${file_id}">
+                                <button type="submit" class="btn-success">Download</button>
+                            </form>
                         </li>`;
                 }
 
-                // 3. Update Active Downloads List
+                if (!foundFiles) {
+                    networkList.innerHTML = '<li class="empty-state">No network files discovered yet.</li>';
+                }
+
+                // 2. UPDATE MY SHARED FILES
+                const myFilesList = document.getElementById('my-files-list');
+                myFilesList.innerHTML = '';
+                let foundMyFiles = false;
+
+                for (const [file_id, meta] of Object.entries(data.my_files)) {
+                    foundMyFiles = true;
+                    myFilesList.innerHTML += `
+                        <li>
+                            <div class="file-info">
+                                <a href="/open/${file_id}" target="_blank" class="file-name">${meta.filename}</a>
+                                <div class="file-meta">
+                                    <span class="badge">${formatBytes(meta.size)}</span>
+                                </div>
+                            </div>
+                            <form action="/remove" method="post" style="margin: 0;">
+                                <input type="hidden" name="file_id" value="${file_id}">
+                                <button type="submit" class="btn-remove">Remove</button>
+                            </form>
+                        </li>`;
+                }
+
+                if (!foundMyFiles) {
+                    myFilesList.innerHTML = '<li class="empty-state">You are not sharing any files.</li>';
+                }
+
+                // 3. UPDATE ACTIVE DOWNLOADS
                 const downloadList = document.getElementById('download-list');
                 downloadList.innerHTML = '';
-
                 const downloads = data.downloads || {};
 
                 if (Object.keys(downloads).length === 0) {
-                     downloadList.innerHTML = '<li style="color: #666; justify-content: center;">No active downloads</li>';
+                     downloadList.innerHTML = '<li class="empty-state">No active downloads</li>';
                 } else {
                     for (const [file_id, downloadInfo] of Object.entries(downloads)) {
-
                         let displayProgress = downloadInfo.progress;
-                        let barColor = "#28a745"; // Default Green
+                        let barColor = "var(--success-color)";
                         let barWidth = downloadInfo.progress;
 
-                        // Roust check: If the python code set the progress to the string "Failed"
+                        // Check for Failed State
                         if (displayProgress === "Failed" || String(displayProgress).includes("Failed")) {
                             displayProgress = "Failed (Disconnected)";
-                            barColor = "#dc3545"; // Turn the bar Red
-                            barWidth = 100;       // Fill the red bar all the way
+                            barColor = "var(--danger-color)";
+                            barWidth = 100;
                         } else {
                             displayProgress = displayProgress + "%";
                         }
 
                         downloadList.innerHTML += `
                             <li style="display: block;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                    <strong>${downloadInfo.filename}</strong>
-                                    <span style="color: ${barColor}; font-weight: bold;">${displayProgress}</span>
-                                </div>
-                                <div class="progress-container">
-                                    <div class="progress-bar" style="width: ${barWidth}%; background-color: ${barColor};"></div>
+                                <div class="progress-wrapper">
+                                    <div class="progress-header">
+                                        <span style="color: var(--text-main);">${downloadInfo.filename}</span>
+                                        <span style="color: ${barColor};">${displayProgress}</span>
+                                    </div>
+                                    <div class="progress-container">
+                                        <div class="progress-bar" style="width: ${barWidth}%; background-color: ${barColor};"></div>
+                                    </div>
                                 </div>
                             </li>`;
                     }
@@ -151,52 +323,65 @@
             }
         }
 
-        // Auto-refresh every 2 seconds
+        // Auto-refresh
         setInterval(updateDashboard, 2000);
-
-        // Run immediately on load
         window.onload = updateDashboard;
     </script>
 </head>
 <body>
-    <h1>🚀 P2P File Sharer</h1>
 
-    <div class="container">
-        <h2>⬇️ Active Downloads</h2>
-        <ul id="download-list">
-            <li style="color: #666; justify-content: center;">Loading...</li>
-        </ul>
-    </div>
-
-    <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-        <h2>📂 My Shared Files</h2>
-        <form action="/select_file" method="post">
-            <button type="submit" class="btn-primary">+ Add File</button>
-        </form>
+    <div class="navbar">
+        <h1>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                <polyline points="2 17 12 22 22 17"></polyline>
+                <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+            Nexus P2P
+        </h1>
     </div>
 
     <div class="container">
-        <ul id="my-files-list">
-             {% for file_id, meta in my_files.items() %}
-             <li>
-                 <span><a href="/open/{{ file_id }}" target="_blank" style="text-decoration: none; color: #007bff; font-weight: bold;">{{ meta.filename }}</a></span>
-                 <div style="display: flex; align-items: center;">
-                     <span class="badge">{{ meta.size }} bytes</span>
-                     <form action="/remove" method="post" style="margin: 0;">
-                         <input type="hidden" name="file_id" value="{{ file_id }}">
-                         <button type="submit" class="remove-btn">×</button>
-                     </form>
-                 </div>
-             </li>
-             {% endfor %}
-        </ul>
+        <div style="display: flex; flex-direction: column; gap: 25px;">
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Active Downloads</h2>
+                </div>
+                <ul id="download-list">
+                    <li class="empty-state">Loading...</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>My Shared Files</h2>
+                    <form action="/select_file" method="post" style="margin:0;">
+                        <button type="submit" class="btn-primary">+ Add File</button>
+                    </form>
+                </div>
+                <ul id="my-files-list">
+                    {% for file_id, meta in my_files.items() %}
+                    <li>
+                        <div class="file-info">
+                            <a href="/open/{{ file_id }}" target="_blank" class="file-name">{{ meta.filename }}</a>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Network Files</h2>
+            </div>
+            <ul id="network-files-list">
+                <li class="empty-state">Scanning for peers...</li>
+            </ul>
+        </div>
     </div>
 
-    <div class="container">
-        <h2>🌐 Network Files (Downloadable)</h2>
-        <ul id="network-files-list">
-            <li style="color: #666; justify-content: center;">Scanning for peers...</li>
-        </ul>
-    </div>
 </body>
 </html>
