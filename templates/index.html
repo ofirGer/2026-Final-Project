@@ -45,7 +45,7 @@
 
         /* Progress Bar Styles */
         .progress-container { width: 100%; background-color: #eee; border-radius: 5px; height: 10px; margin-top: 5px; }
-        .progress-bar { background-color: #28a745; height: 100%; border-radius: 5px; transition: width 0.5s ease; }
+        .progress-bar { background-color: #28a745; height: 100%; border-radius: 5px; transition: width 0.5s ease, background-color 0.5s ease; }
     </style>
     <script>
         function formatBytes(bytes, decimals = 2) {
@@ -62,14 +62,14 @@
                 const response = await fetch('/api/data');
                 const data = await response.json();
 
+                // For Debugging: Open your browser's Developer Tools (F12) -> Console to see the raw data!
+                // console.log("Current Downloads:", data.downloads);
+
                 // 1. Update Network Files List
                 const networkList = document.getElementById('network-files-list');
                 networkList.innerHTML = '';
-
-                // Track if we found any files
                 let foundFiles = false;
 
-                // FIXED: Iterate using file_id as the key, and read meta.filename
                 for (const [peerId, peerData] of Object.entries(data.peers)) {
                     for (const [file_id, meta] of Object.entries(peerData.files)) {
                         foundFiles = true;
@@ -95,7 +95,6 @@
                 const myFilesList = document.getElementById('my-files-list');
                 myFilesList.innerHTML = '';
 
-                // FIXED: Iterate using file_id and set the hidden input correctly
                 for (const [file_id, meta] of Object.entries(data.my_files)) {
                     myFilesList.innerHTML += `
                         <li>
@@ -121,25 +120,24 @@
                 } else {
                     for (const [file_id, downloadInfo] of Object.entries(downloads)) {
 
-                        // --- NEW: Detect Failed State ---
                         let displayProgress = downloadInfo.progress;
                         let barColor = "#28a745"; // Default Green
                         let barWidth = downloadInfo.progress;
 
-                        if (downloadInfo.progress === "Failed") {
-                            displayProgress = "Failed (Peer Disconnected)";
-                            barColor = "#dc3545"; // Red color
-                            barWidth = 100; // Fill bar with red
+                        // Roust check: If the python code set the progress to the string "Failed"
+                        if (displayProgress === "Failed" || String(displayProgress).includes("Failed")) {
+                            displayProgress = "Failed (Disconnected)";
+                            barColor = "#dc3545"; // Turn the bar Red
+                            barWidth = 100;       // Fill the red bar all the way
                         } else {
                             displayProgress = displayProgress + "%";
                         }
-                        // --------------------------------
 
                         downloadList.innerHTML += `
                             <li style="display: block;">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                                     <strong>${downloadInfo.filename}</strong>
-                                    <span style="color: ${downloadInfo.progress === 'Failed' ? '#dc3545' : '#000'}">${displayProgress}</span>
+                                    <span style="color: ${barColor}; font-weight: bold;">${displayProgress}</span>
                                 </div>
                                 <div class="progress-container">
                                     <div class="progress-bar" style="width: ${barWidth}%; background-color: ${barColor};"></div>
