@@ -119,16 +119,30 @@
                 if (Object.keys(downloads).length === 0) {
                      downloadList.innerHTML = '<li style="color: #666; justify-content: center;">No active downloads</li>';
                 } else {
-                    // FIXED: Handle the new active_downloads dictionary structure { file_id: {filename: "...", progress: 45} }
                     for (const [file_id, downloadInfo] of Object.entries(downloads)) {
+
+                        // --- NEW: Detect Failed State ---
+                        let displayProgress = downloadInfo.progress;
+                        let barColor = "#28a745"; // Default Green
+                        let barWidth = downloadInfo.progress;
+
+                        if (downloadInfo.progress === "Failed") {
+                            displayProgress = "Failed (Peer Disconnected)";
+                            barColor = "#dc3545"; // Red color
+                            barWidth = 100; // Fill bar with red
+                        } else {
+                            displayProgress = displayProgress + "%";
+                        }
+                        // --------------------------------
+
                         downloadList.innerHTML += `
                             <li style="display: block;">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
                                     <strong>${downloadInfo.filename}</strong>
-                                    <span>${downloadInfo.progress}%</span>
+                                    <span style="color: ${downloadInfo.progress === 'Failed' ? '#dc3545' : '#000'}">${displayProgress}</span>
                                 </div>
                                 <div class="progress-container">
-                                    <div class="progress-bar" style="width: ${downloadInfo.progress}%;"></div>
+                                    <div class="progress-bar" style="width: ${barWidth}%; background-color: ${barColor};"></div>
                                 </div>
                             </li>`;
                     }
