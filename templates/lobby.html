@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OG P2P - Join Swarm</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        /* Specific layout for the lobby page to center the card vertically */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: var(--bg-color); /* Uses variable from style.css */
+        }
+
+        .lobby-wrapper {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        /* Styling the form inputs to match your theme */
+        .lobby-wrapper input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            background-color: var(--surface-color);
+            color: var(--text-main);
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .lobby-wrapper input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .lobby-wrapper button {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+        }
+
+        .icon-header {
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="lobby-wrapper">
+        <div class="card" style="padding: 2.5rem 2rem;">
+
+            <div class="icon-header">
+                <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                    <polyline points="2 17 12 22 22 17"></polyline>
+                    <polyline points="2 12 12 17 22 12"></polyline>
+                </svg>
+                <h1 style="margin-top: 15px; margin-bottom: 5px; color: var(--text-main);">OG P2P</h1>
+                <p style="color: var(--text-muted); margin-top: 0;">Enter a network key to join</p>
+            </div>
+
+            <form action="/join" method="POST">
+                <input type="text" name="username" placeholder="Choose Username" required autocomplete="off">
+                <input type="password" name="network_key" placeholder="Swarm Key (Password)" required>
+                <button type="submit" class="btn-primary">Connect to Network</button>
+            </form>
+
+        </div>
+    </div>
+
+</body>
+</html>

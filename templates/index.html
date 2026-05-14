@@ -10,15 +10,16 @@
 <body>
 
     <div class="navbar">
-        <h1>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                <polyline points="2 17 12 22 22 17"></polyline>
-                <polyline points="2 12 12 17 22 12"></polyline>
-            </svg>
-            OG P2P
-        </h1>
+    <h1>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+        OG P2P
+    </h1>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 20px;">
+        <span style="color: var(--text-muted);">User: <strong>{{ username }}</strong></span>
+        <span style="color: var(--text-muted);">Swarm: <code style="background: #e5e7eb; padding: 2px 6px; border-radius: 4px;">{{ network_key }}</code></span>
+        <a href="/logout" style="color: var(--danger-color); text-decoration: none; font-weight: bold;">Logout</a>
     </div>
+</div>
 
     <div class="container">
         <div style="display: flex; flex-direction: column; gap: 25px;">

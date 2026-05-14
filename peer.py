@@ -123,9 +123,6 @@ class Peer:
         fernet_key = base64.urlsafe_b64encode(key_hash)
         self.fernet = Fernet(fernet_key)
 
-        # 2. CLEAR the peer table
-        # This is vital: peers from the "old" network shouldn't show up
-        # in the "new" network session.
+        # 2. CLEAR the peer table immediately
         self.peer_table.clear()
-
-        print(f"Switched to network: {new_password}")
+        print(f"[*] Network key updated. Swarm: {new_password}")
