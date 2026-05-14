@@ -1,8 +1,8 @@
 from flask import Flask, render_template, request, redirect, jsonify, send_from_directory, session, url_for
 import threading
 import os
-import tkinter as tk
-from tkinter import filedialog
+import tempfile
+
 
 
 class WebUI:
@@ -59,12 +59,27 @@ class WebUI:
 
         @self.app.route('/select_file', methods=['POST'])
         def select_file():
-            root = tk.Tk()
-            root.withdraw()
-            file_path = filedialog.askopenfilename()
-            root.destroy()
-            if file_path:
-                self.file_manager.add_file(file_path)
+            # Check if a file was actually uploaded in the request
+            if 'file' not in request.files:
+                return redirect('/')
+
+            file = request.files['file']
+
+            if file and file.filename != '':
+                # 1. Save the uploaded file to a temporary location
+                temp_dir = tempfile.gettempdir()
+                temp_path = os.path.join(temp_dir, file.filename)
+                file.save(temp_path)
+
+                # 2. Use your existing file manager to add it to the shared folder
+                self.file_manager.add_file(temp_path)
+
+                # 3. Clean up the temporary file
+                try:
+                    os.remove(temp_path)
+                except OSError:
+                    pass
+
             return redirect('/')
 
         @self.app.route('/download', methods=['POST'])

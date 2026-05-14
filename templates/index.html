@@ -36,8 +36,9 @@
             <div class="card">
                 <div class="card-header">
                     <h2>My Shared Files</h2>
-                    <form action="/select_file" method="post" style="margin:0;">
-                        <button type="submit" class="btn-primary">+ Add File</button>
+                    <form action="/select_file" method="post" enctype="multipart/form-data" style="margin:0;">
+                        <input type="file" name="file" id="fileInput" style="display: none;" onchange="this.form.submit()">
+                        <button type="button" class="btn-primary" onclick="document.getElementById('fileInput').click()">+ Add File</button>
                     </form>
                 </div>
                 <ul id="my-files-list">
