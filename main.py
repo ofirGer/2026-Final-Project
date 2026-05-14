@@ -8,7 +8,8 @@ if __name__ == "__main__":
     file_manager = SharedFilesManager()
 
     # 1. Start the Peer Discovery (UDP)
-    peer = Peer(file_manager)
+    # You can now choose your 'Swarm Name' here
+    peer = Peer(file_manager, network_password="MY_PRIVATE_SWARM")
     peer.start()
 
     # 2. Start the TCP Server (To let others download from me)

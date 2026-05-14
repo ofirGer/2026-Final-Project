@@ -115,3 +115,17 @@ class Peer:
                 if now - info["last_seen"] > self.peer_timeout:
                     del self.peer_table[peer_id]
             time.sleep(5)
+
+    def set_network_password(self, new_password):
+        """Updates the encryption key and clears old peers from the table."""
+        # 1. Generate the new key
+        key_hash = hashlib.sha256(new_password.encode()).digest()
+        fernet_key = base64.urlsafe_b64encode(key_hash)
+        self.fernet = Fernet(fernet_key)
+
+        # 2. CLEAR the peer table
+        # This is vital: peers from the "old" network shouldn't show up
+        # in the "new" network session.
+        self.peer_table.clear()
+
+        print(f"Switched to network: {new_password}")
