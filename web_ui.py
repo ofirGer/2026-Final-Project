@@ -108,5 +108,18 @@ class WebUI:
                 self.file_manager.remove_file(file_id)
             return redirect('/')
 
+        @self.app.route('/open/<file_id>')
+        def open_file(file_id):
+            # 1. Check if the file is in our local shared manager
+            if file_id in self.file_manager.my_files:
+                filename = self.file_manager.my_files[file_id]['filename']
+                shared_dir = os.path.abspath(self.file_manager.shared_folder)
+
+                # 2. Serve the file to the browser
+                # as_attachment=False allows the browser to try and view it (PDF, Images, Text)
+                return send_from_directory(shared_dir, filename, as_attachment=False)
+
+            return "File not found on this node.", 404
+
     def run(self):
         self.app.run(debug=False, port=5000, host='0.0.0.0')

@@ -4,7 +4,7 @@ from tcp_server import TCPServer  # <--- NEW
 from tcp_client import TCPClient  # <--- NEW
 from web_ui import WebUI  # Assuming you have the web_ui file from previous steps
 
-if __name__ == "__main__":
+def main():
     file_manager = SharedFilesManager()
 
     # 1. Start the Peer Discovery (UDP)
@@ -25,3 +25,6 @@ if __name__ == "__main__":
     # Note: We pass tcp_client so the UI can trigger downloads
     web_ui = WebUI(peer, file_manager, tcp_client)
     web_ui.run()
+
+if __name__ == "__main__":
+    main()
