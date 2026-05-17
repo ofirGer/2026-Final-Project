@@ -9,9 +9,7 @@ def main():
 
     # 1. Start the Peer Discovery (UDP)
     # You can now choose your 'Swarm Name' here
-    # school: broadcast_ip="172.16.255.255"
-    # home: broadcast_ip="192.168.1.255"
-    peer = Peer(file_manager, network_password="MY_PRIVATE_SWARM", broadcast_ip="172.16.255.255")
+    peer = Peer(file_manager, broadcast_ip="192.168.1.255")
     peer.start()
 
     # 2. Start the TCP Server (To let others download from me)

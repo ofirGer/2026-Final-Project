@@ -62,26 +62,27 @@ async function updateDashboard() {
             networkList.innerHTML = '<li class="empty-state">No network files discovered yet.</li>';
         }
 
-        // --- Find this section inside your updateDashboard function ---
+        // 2. UPDATE MY SHARED FILES
+        const myFilesList = document.getElementById('my-files-list');
+        myFilesList.innerHTML = '';
+        let foundMyFiles = false;
 
-    // 2. Render My Files List
-    const myFilesList = document.getElementById('my-files-list');
-    myFilesList.innerHTML = '';
-    for (const [file_id, meta] of Object.entries(data.my_files)) {
-        myFilesList.innerHTML += `
-            <li>
-                <div class="file-info">
-                    <a href="/open/${file_id}" target="_blank" class="file-name">${meta.filename}</a>
-                    <span class="file-meta">${formatBytes(meta.size)}</span>
-                </div>
-                <div class="file-actions">
-                    <form action="/remove" method="POST" style="margin:0;">
+        for (const [file_id, meta] of Object.entries(data.my_files)) {
+            foundMyFiles = true;
+            myFilesList.innerHTML += `
+                <li>
+                    <div class="file-info">
+                        <a href="/open/${file_id}" target="_blank" class="file-name">${meta.filename}</a>
+                        <div class="file-meta">
+                            <span class="badge">${formatBytes(meta.size)}</span>
+                        </div>
+                    </div>
+                    <form action="/remove" method="post" style="margin: 0;">
                         <input type="hidden" name="file_id" value="${file_id}">
                         <button type="submit" class="btn-remove">Remove</button>
                     </form>
-                </div>
-            </li>`;
-    }
+                </li>`;
+        }
 
         if (!foundMyFiles) {
             myFilesList.innerHTML = '<li class="empty-state">You are not sharing any files.</li>';

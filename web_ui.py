@@ -122,4 +122,7 @@ class WebUI:
             return "File not found on this node.", 404
 
     def run(self):
-        self.app.run(debug=False, port=5000, host='0.0.0.0')
+        # Changing host to '127.0.0.1' makes the UI local-only.
+        # It will only respond to http://localhost:5000 or http://127.0.0.1:5000
+        print("[*] Web UI is running locally at http://127.0.0.1:5000")
+        self.app.run(debug=False, port=5000, host='127.0.0.1')
