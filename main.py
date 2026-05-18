@@ -21,7 +21,7 @@ def main():
 
     # 4. Start the Web UI
     # Note: We pass tcp_client so the UI can trigger downloads
-    web_ui = WebUI(peer, file_manager, tcp_client)
+    web_ui = WebUI(peer, file_manager, tcp_client, tcp_server)
     web_ui.run()
 
 if __name__ == "__main__":

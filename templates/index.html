@@ -35,6 +35,15 @@
 
             <div class="card">
                 <div class="card-header">
+                    <h2>Active Uploads (Seeding)</h2>
+                </div>
+                <ul id="upload-list">
+                    <li class="empty-state">Not currently seeding files.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
                     <h2>My Shared Files</h2>
                     <form action="/select_file" method="post" enctype="multipart/form-data" style="margin:0;">
                         <input type="file" name="file" id="fileInput" style="display: none;" onchange="this.form.submit()">

@@ -18,7 +18,7 @@ class TCPClient:
         self.active_downloads = {}
 
         self.download_sessions = {}
-        self.cancel_flags = {}  # <--- NEW: Fast Abort Switch
+        self.cancel_flags = {}  # <--- Fast Abort Switch
 
         self.MAX_WORKERS = 5
 
@@ -52,7 +52,8 @@ class TCPClient:
         self.cancel_flags[file_id] = False
 
         print(f"Starting SWARM download: {filename} from {len(peers_list)} peers")
-        self.active_downloads[file_id] = {"filename": filename, "progress": 0}
+        # Initialize speed to 0 when starting
+        self.active_downloads[file_id] = {"filename": filename, "progress": 0, "speed": 0}
 
         if "checksums" not in file_metadata:
             full_metadata = None
@@ -81,8 +82,12 @@ class TCPClient:
         progress_lock = threading.Lock()
         completed_chunks = 0
 
+        # --- SPEED TRACKING VARIABLES ---
+        last_speed_calc_time = time.time()
+        bytes_downloaded_since_last = 0
+
         def download_worker(chunk_index):
-            nonlocal completed_chunks
+            nonlocal completed_chunks, last_speed_calc_time, bytes_downloaded_since_last
 
             # FAST ABORT: If network failed on another thread, don't even try.
             if self.cancel_flags.get(file_id, False) or self.download_sessions.get(file_id) != session_id:
@@ -93,11 +98,27 @@ class TCPClient:
                                      session_id)
 
             if success:
+                # Use the lock to prevent thread race conditions when updating progress and speed
                 with progress_lock:
                     if self.download_sessions.get(file_id) == session_id:
+                        # Update Progress
                         completed_chunks += 1
                         progress_percent = int((completed_chunks / total_chunks) * 100)
                         self.active_downloads[file_id]["progress"] = progress_percent
+
+                        # --- CALCULATE SPEED ---
+                        bytes_downloaded_since_last += chunk_size
+                        now = time.time()
+                        time_diff = now - last_speed_calc_time
+
+                        # Update the speed stat every 1 second
+                        if time_diff >= 1.0:
+                            speed = bytes_downloaded_since_last / time_diff
+                            self.active_downloads[file_id]['speed'] = speed
+
+                            # Reset the trackers for the next second
+                            bytes_downloaded_since_last = 0
+                            last_speed_calc_time = now
 
         with ThreadPoolExecutor(max_workers=self.MAX_WORKERS) as executor:
             executor.map(download_worker, chunks_to_download)
@@ -108,10 +129,12 @@ class TCPClient:
                 if os.path.exists(part_path):
                     os.rename(part_path, final_path)
                 self.active_downloads[file_id]["progress"] = 100
+                self.active_downloads[file_id]["speed"] = 0  # Reset speed on completion
                 self.file_manager.load_shared_files()
             else:
                 print(f"Download FAILED for {filename}. Peer likely disconnected.")
                 self.active_downloads[file_id]["progress"] = "Failed"
+                self.active_downloads[file_id]["speed"] = 0
 
             time.sleep(5)
             if self.download_sessions.get(file_id) == session_id:
@@ -124,7 +147,7 @@ class TCPClient:
         if self.cancel_flags.get(file_id, False) or self.download_sessions.get(file_id) != session_id:
             return False
 
-            # 1. RESUME FEATURE
+        # 1. RESUME FEATURE
         try:
             if os.path.exists(save_path):
                 with open(save_path, 'rb') as f:
@@ -139,7 +162,7 @@ class TCPClient:
         except Exception as e:
             pass
 
-            # 2. NETWORK DOWNLOAD
+        # 2. NETWORK DOWNLOAD
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(3)  # Reduced to 3 seconds so we fail faster

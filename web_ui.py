@@ -6,10 +6,11 @@ import tempfile
 
 
 class WebUI:
-    def __init__(self, peer, file_manager, tcp_client):
+    def __init__(self, peer, file_manager, tcp_client, tcp_server):
         self.peer = peer
         self.file_manager = file_manager
         self.tcp_client = tcp_client
+        self.tcp_server = tcp_server
         self.app = Flask(__name__)
         self.app.secret_key = 'og_p2p_secure_session_key'  # Required for sessions
 
@@ -54,7 +55,8 @@ class WebUI:
             return jsonify({
                 "peers": self.peer.peer_table,
                 "my_files": self.file_manager.my_files,
-                "downloads": self.tcp_client.active_downloads
+                "downloads": self.tcp_client.active_downloads,
+                "uploads": self.tcp_server.active_uploads
             })
 
         @self.app.route('/select_file', methods=['POST'])
