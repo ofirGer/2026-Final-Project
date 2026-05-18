@@ -125,7 +125,7 @@ class WebUI:
 
             # Add this route inside the WebUI class routes section
         @self.app.route('/abort/<file_id>')
-        def abort_download(self, file_id):
+        def abort_download(file_id):
             if file_id in self.tcp_client.active_downloads:
                 self.tcp_client.abort_download(file_id)
             return redirect('/')
