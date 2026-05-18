@@ -87,44 +87,53 @@ async function updateDashboard() {
                 </li>`;
         }
 
-        // 3. RENDER DOWNLOADS (Now with Speed Stats!)
+        // 3. RENDER DOWNLOADS (FIXED COLOR LOGIC)
         const downloadList = document.getElementById('download-list');
         downloadList.innerHTML = '';
         if (Object.keys(data.downloads).length === 0) {
             downloadList.innerHTML = '<li class="empty-state">No active downloads</li>';
         } else {
             for (const [file_id, downloadInfo] of Object.entries(data.downloads)) {
-                let displayProgress = Math.floor(downloadInfo.progress);
+                let rawProgress = downloadInfo.progress; // Original value from Python
+                let displayProgress;
                 let barColor = "var(--success-color)";
-                let barWidth = downloadInfo.progress;
+                let barWidth = 0;
                 let speedText = formatSpeed(downloadInfo.speed || 0);
 
-                // Check for Failed State
-                if (displayProgress === "Failed" || String(displayProgress).includes("Failed")) {
-                    displayProgress = "Failed (Disconnected)";
-                    barColor = "var(--danger-color)";
-                    barWidth = 100;
-                    speedText = "0 B/s";
-                } else if (displayProgress === 100) {
-                    speedText = "Complete";
-                    displayProgress = "100%";
+                // --- THE FIX: Check for "Failed" BEFORE applying Math.floor ---
+                if (rawProgress === "Failed") {
+                    displayProgress = "Aborted / Failed";
+                    barColor = "var(--danger-color)"; // Turn bar red
+                    barWidth = 100;                   // Fill bar to show color
+                    speedText = "Stopped";
                 } else {
-                    displayProgress = displayProgress + "%";
+                    let progressNum = Math.floor(rawProgress || 0);
+                    displayProgress = progressNum + "%";
+                    barWidth = progressNum;
+
+                    if (progressNum === 100) {
+                        speedText = "Complete";
+                        barColor = "var(--success-color)";
+                    }
                 }
 
                 downloadList.innerHTML += `
-                    <li style="display: block;">
+                    <li style="display: block; position: relative; margin-bottom: 15px;">
                         <div class="progress-wrapper">
                             <div class="progress-header">
-                                <span style="color: var(--text-main);">${downloadInfo.filename}
-                                    <span style="color:var(--text-muted); font-size:0.8rem; margin-left:10px;">${speedText}</span>
+                                <span style="color: var(--text-main); font-weight: bold;">
+                                    ${downloadInfo.filename}
+                                    <span style="color:var(--text-muted); font-size:0.8rem; font-weight: normal; margin-left:10px;">${speedText}</span>
                                 </span>
-                                <span style="color: ${barColor};">${displayProgress}</span>
+                                <span style="color: ${barColor}; font-weight: bold;">${displayProgress}</span>
                             </div>
-                            <div class="progress-container">
-                                <div class="progress-bar" style="width: ${barWidth}%; background-color: ${barColor};"></div>
+                            <div class="progress-container" style="height: 10px; background: #e5e7eb; border-radius: 5px; overflow: hidden; margin-top: 5px;">
+                                <div class="progress-bar" style="width: ${barWidth}%; height: 100%; background-color: ${barColor}; transition: width 0.3s ease;"></div>
                             </div>
                         </div>
+                        ${rawProgress !== "Failed" && rawProgress !== 100 ?
+                            `<a href="/abort/${file_id}" style="position: absolute; right: -25px; top: 0; color: #9ca3af; text-decoration: none; font-size: 1.2rem;">✕</a>`
+                            : ''}
                     </li>`;
             }
         }

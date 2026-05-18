@@ -142,6 +142,15 @@ class TCPClient:
                     del self.active_downloads[file_id]
                 del self.download_sessions[file_id]
 
+    def abort_download(self, file_id):
+        """Manually trigger the fast abort switch."""
+        print(f"Aborting download for file_id: {file_id}")
+        self.cancel_flags[file_id] = True
+
+        # Immediately update the UI status
+        if file_id in self.active_downloads:
+            self.active_downloads[file_id]["progress"] = "Failed"
+            self.active_downloads[file_id]["speed"] = 0
     def get_chunk(self, ip, port, file_id, chunk_index, chunk_size, expected_hash, save_path, session_id):
         # Check Abort Switches
         if self.cancel_flags.get(file_id, False) or self.download_sessions.get(file_id) != session_id:

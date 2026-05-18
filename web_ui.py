@@ -123,6 +123,13 @@ class WebUI:
 
             return "File not found on this node.", 404
 
+            # Add this route inside the WebUI class routes section
+        @self.app.route('/abort/<file_id>')
+        def abort_download(self, file_id):
+            if file_id in self.tcp_client.active_downloads:
+                self.tcp_client.abort_download(file_id)
+            return redirect('/')
+
     def run(self):
         # Changing host to '127.0.0.1' makes the UI local-only.
         # It will only respond to http://localhost:5000 or http://127.0.0.1:5000
