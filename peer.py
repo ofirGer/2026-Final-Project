@@ -71,7 +71,7 @@ class Peer:
 
         while self.running:
             try:
-                encrypted_data, addr = sock.recvfrom(4096)
+                encrypted_data, addr = sock.recvfrom(Protocol.BUFFER_SIZE)
 
                 # --- 3. THE BOUNCER (DECRYPTION) ---
                 try:
