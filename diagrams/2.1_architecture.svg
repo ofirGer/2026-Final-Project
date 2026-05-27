@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 760" font-family="Arial, David, sans-serif">
+  <defs>
+    <marker id="arrUDP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#FF8C00"/>
+    </marker>
+    <marker id="arrTCP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1F4E79"/>
+    </marker>
+    <marker id="arrTCPStart" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M10,0 L0,5 L10,10 z" fill="#1F4E79"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1100" height="760" fill="white"/>
+
+  <!-- Title -->
+  <text x="550" y="40" text-anchor="middle" font-size="22" font-weight="bold" fill="#1F4E79" direction="rtl">ארכיטקטורת המערכת — OG P2P Sharer</text>
+
+  <!-- LAN Cloud (shape using path) -->
+  <path d="M 460 360
+           C 430 360, 415 380, 425 405
+           C 405 415, 410 445, 435 450
+           C 440 475, 470 480, 490 465
+           C 510 480, 540 475, 555 460
+           C 580 470, 610 455, 615 430
+           C 645 425, 650 395, 625 380
+           C 625 355, 590 345, 570 360
+           C 545 340, 510 345, 495 365
+           C 480 350, 465 355, 460 360 Z"
+        fill="#dae8fc" stroke="#6c8ebf" stroke-width="2"/>
+  <text x="550" y="395" text-anchor="middle" font-size="14" font-weight="bold" fill="#1F4E79" direction="rtl">רשת LAN מקומית</text>
+  <text x="550" y="415" text-anchor="middle" font-size="11" fill="#1F4E79">192.168.1.0/24</text>
+  <text x="550" y="440" text-anchor="middle" font-size="12" fill="#1F4E79" direction="rtl">נתב / מתג רשת</text>
+
+  <!-- Peer 1 (top-left) -->
+  <rect x="60" y="80" width="220" height="120" rx="8" ry="8" fill="#fff2cc" stroke="#d6b656" stroke-width="2"/>
+  <text x="170" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#1F4E79" direction="rtl">Peer 1 (Ofir)</text>
+  <text x="170" y="123" text-anchor="middle" font-size="11" fill="#333">IP: 192.168.1.10</text>
+  <line x1="75" y1="135" x2="265" y2="135" stroke="#d6b656" stroke-width="1"/>
+  <text x="170" y="153" text-anchor="middle" font-size="10" fill="#444">UDP 50000  •  TCP 50001</text>
+  <text x="170" y="170" text-anchor="middle" font-size="10" fill="#444">Web UI: 127.0.0.1:5000</text>
+  <text x="170" y="190" text-anchor="middle" font-size="10" fill="#666">🔒 RSA-2048 + Fernet</text>
+
+  <!-- Peer 2 (top-right) -->
+  <rect x="820" y="80" width="220" height="120" rx="8" ry="8" fill="#fff2cc" stroke="#d6b656" stroke-width="2"/>
+  <text x="930" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#1F4E79" direction="rtl">Peer 2 (Itamar)</text>
+  <text x="930" y="123" text-anchor="middle" font-size="11" fill="#333">IP: 192.168.1.11</text>
+  <line x1="835" y1="135" x2="1025" y2="135" stroke="#d6b656" stroke-width="1"/>
+  <text x="930" y="153" text-anchor="middle" font-size="10" fill="#444">UDP 50000  •  TCP 50001</text>
+  <text x="930" y="170" text-anchor="middle" font-size="10" fill="#444">Web UI: 127.0.0.1:5000</text>
+  <text x="930" y="190" text-anchor="middle" font-size="10" fill="#666">🔒 RSA-2048 + Fernet</text>
+
+  <!-- Peer 3 (bottom-left) -->
+  <rect x="60" y="540" width="220" height="120" rx="8" ry="8" fill="#fff2cc" stroke="#d6b656" stroke-width="2"/>
+  <text x="170" y="565" text-anchor="middle" font-size="14" font-weight="bold" fill="#1F4E79" direction="rtl">Peer 3 (Eli)</text>
+  <text x="170" y="583" text-anchor="middle" font-size="11" fill="#333">IP: 192.168.1.12</text>
+  <line x1="75" y1="595" x2="265" y2="595" stroke="#d6b656" stroke-width="1"/>
+  <text x="170" y="613" text-anchor="middle" font-size="10" fill="#444">UDP 50000  •  TCP 50001</text>
+  <text x="170" y="630" text-anchor="middle" font-size="10" fill="#444">Web UI: 127.0.0.1:5000</text>
+  <text x="170" y="650" text-anchor="middle" font-size="10" fill="#666">🔒 RSA-2048 + Fernet</text>
+
+  <!-- Peer 4 (bottom-right) -->
+  <rect x="820" y="540" width="220" height="120" rx="8" ry="8" fill="#fff2cc" stroke="#d6b656" stroke-width="2"/>
+  <text x="930" y="565" text-anchor="middle" font-size="14" font-weight="bold" fill="#1F4E79" direction="rtl">Peer 4 (Noa)</text>
+  <text x="930" y="583" text-anchor="middle" font-size="11" fill="#333">IP: 192.168.1.13</text>
+  <line x1="835" y1="595" x2="1025" y2="595" stroke="#d6b656" stroke-width="1"/>
+  <text x="930" y="613" text-anchor="middle" font-size="10" fill="#444">UDP 50000  •  TCP 50001</text>
+  <text x="930" y="630" text-anchor="middle" font-size="10" fill="#444">Web UI: 127.0.0.1:5000</text>
+  <text x="930" y="650" text-anchor="middle" font-size="10" fill="#666">🔒 RSA-2048 + Fernet</text>
+
+  <!-- UDP Broadcast arrows (dashed orange) -->
+  <line x1="280" y1="160" x2="450" y2="385" stroke="#FF8C00" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrUDP)"/>
+  <text x="335" y="245" font-size="11" font-weight="bold" fill="#FF8C00">UDP Broadcast</text>
+
+  <line x1="820" y1="160" x2="660" y2="385" stroke="#FF8C00" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrUDP)"/>
+  <text x="700" y="245" font-size="11" font-weight="bold" fill="#FF8C00">UDP Broadcast</text>
+
+  <line x1="280" y1="580" x2="450" y2="450" stroke="#FF8C00" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrUDP)"/>
+  <text x="320" y="540" font-size="11" font-weight="bold" fill="#FF8C00">UDP Broadcast</text>
+
+  <line x1="820" y1="580" x2="660" y2="450" stroke="#FF8C00" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrUDP)"/>
+  <text x="700" y="540" font-size="11" font-weight="bold" fill="#FF8C00">UDP Broadcast</text>
+
+  <!-- TCP point-to-point arrows (solid blue, bidirectional) -->
+  <line x1="280" y1="180" x2="820" y2="540" stroke="#1F4E79" stroke-width="2" marker-start="url(#arrTCPStart)" marker-end="url(#arrTCP)"/>
+  <text x="540" y="345" text-anchor="middle" font-size="11" font-weight="bold" fill="#1F4E79" transform="rotate(33 540 345)">TCP Chunks (RSA + Fernet)</text>
+
+  <line x1="280" y1="540" x2="820" y2="180" stroke="#1F4E79" stroke-width="2" marker-start="url(#arrTCPStart)" marker-end="url(#arrTCP)"/>
+
+  <!-- Legend -->
+  <rect x="300" y="690" width="500" height="55" rx="4" ry="4" fill="#f5f5f5" stroke="#cccccc"/>
+  <text x="780" y="710" text-anchor="end" font-size="13" font-weight="bold" fill="#1F4E79" direction="rtl">מקרא:</text>
+  <line x1="320" y1="722" x2="370" y2="722" stroke="#FF8C00" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="780" y="727" text-anchor="end" font-size="11" fill="#FF8C00" direction="rtl">UDP Broadcast (כל 5 שניות, מוצפן Fernet)</text>
+  <line x1="320" y1="740" x2="370" y2="740" stroke="#1F4E79" stroke-width="2"/>
+  <text x="780" y="745" text-anchor="end" font-size="11" fill="#1F4E79" direction="rtl">TCP נקודה-לנקודה (Hybrid RSA-2048 + Fernet)</text>
+</svg>

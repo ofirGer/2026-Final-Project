@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 660" font-family="Arial, David, sans-serif">
+  <defs>
+    <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#666"/></marker>
+    <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#82b366"/></marker>
+    <marker id="arY" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#d6b656"/></marker>
+    <marker id="arRR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#B85450"/></marker>
+    <marker id="arP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#9673a6"/></marker>
+  </defs>
+  <rect width="1200" height="660" fill="white"/>
+
+  <!-- Title -->
+  <text x="600" y="38" text-anchor="middle" font-size="22" font-weight="bold" fill="#1F4E79" direction="rtl">תרשים זרימת מסכים (Screen Flow Diagram)</text>
+
+  <!-- 1. Browser -->
+  <rect x="80" y="100" width="220" height="110" rx="8" ry="8" fill="#f5f5f5" stroke="#999" stroke-width="2"/>
+  <text x="190" y="130" text-anchor="middle" font-size="14" font-weight="bold" fill="#1F4E79" direction="rtl">🌐 הפעלת המערכת</text>
+  <text x="190" y="160" text-anchor="middle" font-size="11" fill="#555" direction="rtl">פתיחת הדפדפן בכתובת:</text>
+  <text x="190" y="180" text-anchor="middle" font-size="11" font-family="monospace" fill="#1F4E79">http://127.0.0.1:5000</text>
+  <text x="190" y="200" text-anchor="middle" font-size="10" fill="#888" direction="rtl">(אין session פעיל)</text>
+
+  <!-- 2. Lobby -->
+  <rect x="460" y="90" width="240" height="130" rx="8" ry="8" fill="#dae8fc" stroke="#6c8ebf" stroke-width="2"/>
+  <text x="580" y="118" text-anchor="middle" font-size="14" font-weight="bold" fill="#1F4E79" direction="rtl">🔐 מסך כניסה (Lobby)</text>
+  <text x="580" y="140" text-anchor="middle" font-size="11" fill="#555" direction="rtl">נתיב: <tspan font-family="monospace" fill="#1F4E79">/lobby</tspan></text>
+  <text x="580" y="162" text-anchor="middle" font-size="11" fill="#555" direction="rtl">שדות: שם משתמש + מפתח נחיל</text>
+  <text x="580" y="184" text-anchor="middle" font-size="11" fill="#555" direction="rtl">כפתור: Connect to Network</text>
+  <text x="580" y="206" text-anchor="middle" font-size="10" fill="#888" direction="rtl">→ יוצר session ושומר ב-Cookie</text>
+
+  <!-- 3. Dashboard -->
+  <rect x="860" y="80" width="280" height="150" rx="8" ry="8" fill="#d5e8d4" stroke="#82b366" stroke-width="2"/>
+  <text x="1000" y="108" text-anchor="middle" font-size="14" font-weight="bold" fill="#1F4E79" direction="rtl">📊 לוח הבקרה (Dashboard)</text>
+  <text x="1000" y="130" text-anchor="middle" font-size="11" fill="#555" direction="rtl">נתיב: <tspan font-family="monospace" fill="#1F4E79">/</tspan></text>
+  <text x="1000" y="151" text-anchor="middle" font-size="10" fill="#555" direction="rtl">4 כרטיסיות: Active Downloads,</text>
+  <text x="1000" y="167" text-anchor="middle" font-size="10" fill="#555" direction="rtl">Active Uploads, My Files, Network Files</text>
+  <text x="1000" y="195" text-anchor="middle" font-size="10" fill="#888" direction="rtl">Polling: <tspan font-family="monospace" fill="#1F4E79">/api/data</tspan> כל 2 שניות</text>
+  <text x="1000" y="215" text-anchor="middle" font-size="10" fill="#888" direction="rtl">עדכון פסי התקדמות בזמן אמת</text>
+
+  <!-- Arrow Browser → Lobby -->
+  <line x1="300" y1="155" x2="455" y2="155" stroke="#666" stroke-width="2" marker-end="url(#ar1)"/>
+  <text x="377" y="148" text-anchor="middle" font-size="11" font-weight="bold" fill="#666" direction="rtl">פתיחה ראשונה</text>
+
+  <!-- Arrow Lobby → Dashboard -->
+  <line x1="700" y1="155" x2="855" y2="155" stroke="#82b366" stroke-width="2" marker-end="url(#ar2)"/>
+  <text x="777" y="142" text-anchor="middle" font-size="11" font-weight="bold" fill="#82b366">POST /join</text>
+  <text x="777" y="170" text-anchor="middle" font-size="10" fill="#82b366" direction="rtl">(username + network_key)</text>
+
+  <!-- Actions title -->
+  <text x="600" y="290" text-anchor="middle" font-size="13" font-style="italic" fill="#666" direction="rtl">פעולות מתוך לוח הבקרה (כל פעולה מבצעת redirect חזרה ל-Dashboard):</text>
+
+  <!-- Actions Row -->
+  <g>
+    <!-- Download -->
+    <rect x="60" y="320" width="170" height="90" rx="8" ry="8" fill="#fff2cc" stroke="#d6b656" stroke-width="2"/>
+    <text x="145" y="345" text-anchor="middle" font-size="13" font-weight="bold" fill="#1F4E79" direction="rtl">📥 Download</text>
+    <text x="145" y="368" text-anchor="middle" font-size="11" font-family="monospace" fill="#444">POST /download</text>
+    <text x="145" y="385" text-anchor="middle" font-size="10" fill="#555">(file_id)</text>
+    <text x="145" y="403" text-anchor="middle" font-size="9" fill="#888" direction="rtl">→ Thread נפרד</text>
+
+    <!-- Add -->
+    <rect x="250" y="320" width="170" height="90" rx="8" ry="8" fill="#fff2cc" stroke="#d6b656" stroke-width="2"/>
+    <text x="335" y="345" text-anchor="middle" font-size="13" font-weight="bold" fill="#1F4E79" direction="rtl">➕ Add File</text>
+    <text x="335" y="368" text-anchor="middle" font-size="11" font-family="monospace" fill="#444">POST /select_file</text>
+    <text x="335" y="385" text-anchor="middle" font-size="10" fill="#555">(multipart file)</text>
+    <text x="335" y="403" text-anchor="middle" font-size="9" fill="#888" direction="rtl">→ shared/</text>
+
+    <!-- Remove -->
+    <rect x="440" y="320" width="170" height="90" rx="8" ry="8" fill="#fff2cc" stroke="#d6b656" stroke-width="2"/>
+    <text x="525" y="345" text-anchor="middle" font-size="13" font-weight="bold" fill="#1F4E79" direction="rtl">🗑 Remove</text>
+    <text x="525" y="368" text-anchor="middle" font-size="11" font-family="monospace" fill="#444">POST /remove</text>
+    <text x="525" y="385" text-anchor="middle" font-size="10" fill="#555">(file_id)</text>
+    <text x="525" y="403" text-anchor="middle" font-size="9" fill="#888" direction="rtl">→ delete מהדיסק</text>
+
+    <!-- Abort -->
+    <rect x="630" y="320" width="170" height="90" rx="8" ry="8" fill="#f8cecc" stroke="#B85450" stroke-width="2"/>
+    <text x="715" y="345" text-anchor="middle" font-size="13" font-weight="bold" fill="#1F4E79" direction="rtl">❌ Abort</text>
+    <text x="715" y="368" text-anchor="middle" font-size="11" font-family="monospace" fill="#444">GET /abort/&lt;id&gt;</text>
+    <text x="715" y="385" text-anchor="middle" font-size="10" fill="#555">(file_id)</text>
+    <text x="715" y="403" text-anchor="middle" font-size="9" fill="#888" direction="rtl">→ cancel_flag = True</text>
+
+    <!-- Open -->
+    <rect x="820" y="320" width="170" height="90" rx="8" ry="8" fill="#e1d5e7" stroke="#9673a6" stroke-width="2"/>
+    <text x="905" y="345" text-anchor="middle" font-size="13" font-weight="bold" fill="#1F4E79" direction="rtl">📄 Open File</text>
+    <text x="905" y="368" text-anchor="middle" font-size="11" font-family="monospace" fill="#444">GET /open/&lt;id&gt;</text>
+    <text x="905" y="385" text-anchor="middle" font-size="10" fill="#555">(file_id)</text>
+    <text x="905" y="403" text-anchor="middle" font-size="9" fill="#888" direction="rtl">→ הצגה בדפדפן</text>
+
+    <!-- Logout -->
+    <rect x="1010" y="320" width="170" height="90" rx="8" ry="8" fill="#f5f5f5" stroke="#666" stroke-width="2"/>
+    <text x="1095" y="345" text-anchor="middle" font-size="13" font-weight="bold" fill="#1F4E79" direction="rtl">🚪 Logout</text>
+    <text x="1095" y="368" text-anchor="middle" font-size="11" font-family="monospace" fill="#444">GET /logout</text>
+    <text x="1095" y="385" text-anchor="middle" font-size="10" fill="#555">(session.clear)</text>
+    <text x="1095" y="403" text-anchor="middle" font-size="9" fill="#888" direction="rtl">→ חזרה ל-Lobby</text>
+  </g>
+
+  <!-- Arrows from Dashboard to actions -->
+  <line x1="900" y1="230" x2="160" y2="320" stroke="#d6b656" stroke-width="1.5" marker-end="url(#arY)"/>
+  <line x1="930" y1="230" x2="335" y2="320" stroke="#d6b656" stroke-width="1.5" marker-end="url(#arY)"/>
+  <line x1="960" y1="230" x2="525" y2="320" stroke="#d6b656" stroke-width="1.5" marker-end="url(#arY)"/>
+  <line x1="1000" y1="230" x2="715" y2="320" stroke="#B85450" stroke-width="1.5" marker-end="url(#arRR)"/>
+  <line x1="1050" y1="230" x2="905" y2="320" stroke="#9673a6" stroke-width="1.5" marker-end="url(#arP)"/>
+  <line x1="1100" y1="230" x2="1095" y2="320" stroke="#666" stroke-width="1.5" marker-end="url(#ar1)"/>
+
+  <!-- 302 redirect from Logout to Lobby -->
+  <path d="M 1095 410 L 1095 480 L 580 480 L 580 220" stroke="#666" stroke-width="1.5" stroke-dasharray="6,4" fill="none" marker-end="url(#ar1)"/>
+  <text x="800" y="475" text-anchor="middle" font-size="10" font-style="italic" fill="#666" direction="rtl">302 Redirect → /lobby</text>
+
+  <!-- 302 redirect from other actions back to dashboard -->
+  <path d="M 145 410 L 145 510 L 880 510 L 880 230" stroke="#888" stroke-width="1" stroke-dasharray="3,3" fill="none" marker-end="url(#ar1)"/>
+  <text x="500" y="525" text-anchor="middle" font-size="9" font-style="italic" fill="#888" direction="rtl">302 Redirect → / (לאחר כל פעולה אחרת)</text>
+
+  <!-- Legend -->
+  <rect x="80" y="555" width="1040" height="80" rx="4" ry="4" fill="#fafafa" stroke="#cccccc"/>
+  <text x="1100" y="578" text-anchor="end" font-size="13" font-weight="bold" fill="#1F4E79" direction="rtl">מקרא לפי קבוצת פעולה:</text>
+  <rect x="100" y="592" width="16" height="14" fill="#fff2cc" stroke="#d6b656"/>
+  <text x="1080" y="605" text-anchor="end" font-size="11" fill="#444" direction="rtl">ניהול קבצים (Download, Add File, Remove)</text>
+  <rect x="100" y="612" width="16" height="14" fill="#f8cecc" stroke="#B85450"/>
+  <text x="1080" y="625" text-anchor="end" font-size="11" fill="#444" direction="rtl">ביטול (Abort) — מציב cancel_flag, ההורדה תיעצר תוך 3 שניות</text>
+  <rect x="700" y="592" width="16" height="14" fill="#e1d5e7" stroke="#9673a6"/>
+  <text x="690" y="605" text-anchor="end" font-size="11" fill="#444" direction="rtl">צפייה (Open File)</text>
+  <rect x="700" y="612" width="16" height="14" fill="#f5f5f5" stroke="#666"/>
+  <text x="690" y="625" text-anchor="end" font-size="11" fill="#444" direction="rtl">ניווט (Logout) — מנקה את ה-session</text>
+</svg>

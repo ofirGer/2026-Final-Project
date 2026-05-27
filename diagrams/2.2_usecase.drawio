@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" agent="Claude" version="21.0.0">
+  <diagram name="UseCase" id="uc">
+    <mxGraphModel dx="1422" dy="757" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="תרשים מקרי שימוש (Use Case Diagram)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=20;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="250" y="20" width="600" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="actor" value="Peer User&#xa;(משתמש)" style="shape=umlActor;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;html=1;outlineConnect=0;fontSize=12;fontStyle=1;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="80" y="350" width="50" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="system" value="מערכת OG P2P Sharer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=14;fontStyle=1;verticalAlign=top;fontColor=#1F4E79;" vertex="1" parent="1">
+          <mxGeometry x="280" y="80" width="780" height="560" as="geometry" />
+        </mxCell>
+        <mxCell id="uc1" value="הצטרפות לנחיל" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="350" y="130" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc2" value="שיתוף קובץ" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="600" y="130" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc3" value="הסרת שיתוף" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="850" y="130" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc4" value="הורדת קובץ רגילה" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="350" y="240" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc5" value="הורדת נחיל&#xa;(Swarm Download)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="600" y="240" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc6" value="ביטול הורדה" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="850" y="240" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc7" value="צפייה בלוח הבקרה" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="350" y="350" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc8" value="פתיחת קובץ בדפדפן" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="600" y="350" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc9" value="החלפת נחיל&#xa;(Logout)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="850" y="350" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="autoTitle" value="פעולות אוטומטיות (ברקע, ללא התערבות):" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=12;fontStyle=2;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="400" y="460" width="540" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="uc10" value="« auto »&#xa;שידור פעימות חיים&#xa;(UDP Broadcast / 5s)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="510" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="uc11" value="« auto »&#xa;שליחת מקטעים&#xa;(TCP Seeding)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="740" y="510" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="l1" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="actor" target="uc1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="l2" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="actor" target="uc2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="l3" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="actor" target="uc3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="l4" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="actor" target="uc4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="l5" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="actor" target="uc5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="l6" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="actor" target="uc6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="l7" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="actor" target="uc7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="l8" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="actor" target="uc8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="l9" style="endArrow=none;html=1;strokeColor=#666666;" edge="1" parent="1" source="actor" target="uc9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ext1" value="«extend»" style="endArrow=open;html=1;strokeColor=#999999;dashed=1;fontColor=#999999;fontSize=10;fontStyle=2;" edge="1" parent="1" source="uc1" target="uc10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ext2" value="«extend»" style="endArrow=open;html=1;strokeColor=#999999;dashed=1;fontColor=#999999;fontSize=10;fontStyle=2;" edge="1" parent="1" source="uc2" target="uc11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
