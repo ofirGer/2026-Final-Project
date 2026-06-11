@@ -11,7 +11,7 @@ from protocol import Protocol
 
 
 class Peer:
-    def __init__(self, file_manager, broadcast_ip="172.16.255.255", port=50000, network_password="OG_P2P_SECRET"):
+    def __init__(self, file_manager, broadcast_ip="172.16.255.255", port=50000,):
         self.peer_id = str(uuid.uuid4())
         self.broadcast_ip = broadcast_ip
         self.port = port
@@ -23,6 +23,7 @@ class Peer:
         self.running = True
 
         self.fernet = None
+        self.username = ""
 
     def start(self):
         # Start the UDP discovery only if three is a swarm key
@@ -41,6 +42,7 @@ class Peer:
             payload = {
                 "type": "PEER",
                 "peer_id": self.peer_id,
+                "peer_username": self.username,
                 "tcp_port": Protocol.TCP_PORT,
                 "timestamp": time.time(),  # <--- NEW: Current time
                 "files": self.file_manager.get_files_summary()
@@ -108,7 +110,8 @@ class Peer:
                     del self.peer_table[peer_id]
             time.sleep(5)
 
-    def set_network_password(self, new_password):
+    def set_network_password(self, new_password, username):
+        self.username = username
         """Updates the encryption key and clears old peers from the table."""
         # 1. Generate the new key
         key_hash = hashlib.sha256(new_password.encode()).digest()

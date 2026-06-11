@@ -38,7 +38,7 @@ class WebUI:
                 session['network_key'] = network_key
 
                 # UPDATE PEER SECURITY ON THE FLY
-                self.peer.set_network_password(network_key)
+                self.peer.set_network_password(network_key, username)
                 print(f"[*] {username} joined swarm with key: {network_key}")
 
                 return redirect(url_for('index'))
