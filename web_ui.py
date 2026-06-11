@@ -37,8 +37,10 @@ class WebUI:
                 session['username'] = username
                 session['network_key'] = network_key
 
-                # UPDATE PEER SECURITY ON THE FLY
-                self.peer.set_network_password(network_key, username)
+                # ACTIVATE UDP DISCOVERY (first time) or UPDATE CREDENTIALS
+                # (subsequent times — e.g., after Logout). The username is
+                # also embedded in every outgoing UDP broadcast.
+                self.peer.start(username, network_key)
                 print(f"[*] {username} joined swarm with key: {network_key}")
 
                 return redirect(url_for('index'))
@@ -47,6 +49,9 @@ class WebUI:
         @self.app.route('/logout')
         def logout():
             session.clear()
+            # Pause UDP discovery. The background threads stay alive but skip
+            # every iteration until the user joins a swarm again.
+            self.peer.stop()
             return redirect(url_for('lobby'))
 
         # --- Existing API and File Routes ---
