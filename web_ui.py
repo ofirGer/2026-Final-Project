@@ -14,6 +14,17 @@ class WebUI:
         self.app = Flask(__name__)
         self.app.secret_key = 'og_p2p_secure_session_key'  # Required for sessions
 
+        @self.app.before_request
+        def auto_resume_after_restart():
+            """If the Python process was restarted but the browser still
+            holds a valid session cookie, the user bypasses the lobby —
+            yet the freshly-created Peer has no credentials. Re-activate
+            UDP discovery transparently using what's stored in the session."""
+            if (not self.peer.is_active()
+                    and 'username' in session
+                    and 'network_key' in session):
+                self.peer.start(session['username'], session['network_key'])
+
         @self.app.route('/')
         def index():
             # If not logged in, redirect to lobby

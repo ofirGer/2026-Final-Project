@@ -70,14 +70,19 @@ class Peer:
         """Pause UDP discovery (called on Logout).
 
         The background threads stay alive, but every iteration of the
-        broadcast/listen loops sees `fernet is None` and skips its work.
-        The peer_table is cleared so the dashboard shows nothing while
-        logged out. A future start() call seamlessly resumes activity.
+        broadcast/listen loops sees is_active() == False and skips its
+        work. The peer_table is cleared so the dashboard shows nothing
+        while logged out. A future start() call seamlessly resumes.
         """
         self.username = None
         self.fernet = None
         self.peer_table.clear()
         print("[*] Logged out — UDP discovery paused.")
+
+    def is_active(self):
+        """True iff the user is currently joined to a swarm.
+        False after __init__ (before login) and after stop() (Logout)."""
+        return self.fernet is not None and self.username is not None
 
     def broadcast_presence(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -86,11 +91,10 @@ class Peer:
 
         while self.running:
             # --- PAUSE GATE ---
-            # If the user is logged out (or hasn't logged in yet), there's
-            # no Fernet key and no username — skip this iteration.
-            # We poll every 0.5s so the moment start() is called again,
-            # broadcasting resumes almost immediately.
-            if self.fernet is None or self.username is None:
+            # If the user is logged out (or hasn't logged in yet), skip
+            # this iteration. We poll every 0.5s so the moment start() is
+            # called again, broadcasting resumes almost immediately.
+            if not self.is_active():
                 time.sleep(0.5)
                 continue
 
@@ -128,7 +132,7 @@ class Peer:
                 # --- PAUSE GATE ---
                 # If logged out, we still drain incoming packets (so the OS
                 # socket buffer doesn't fill up), but we don't process them.
-                if self.fernet is None:
+                if not self.is_active():
                     continue
 
                 # --- 3. THE BOUNCER (DECRYPTION) ---
