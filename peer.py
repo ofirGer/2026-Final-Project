@@ -22,22 +22,14 @@ class Peer:
         self.peer_table = {}
         self.running = True
 
-        # --- 1. KEY DERIVATION LOGIC ---
-        # We take the human-readable password and hash it using SHA-256.
-        # This guarantees we get exactly 32 bytes of seemingly random data.
-        key_hash = hashlib.sha256(network_password.encode()).digest()
-
-        # Fernet requires the 32-byte key to be url-safe base64 encoded.
-        fernet_key = base64.urlsafe_b64encode(key_hash)
-
-        # Create our Symmetric Encryption tool
-        self.fernet = Fernet(fernet_key)
-        print(f"UDP Security Initialized. Swarm Password: {network_password}")
+        self.fernet = None
 
     def start(self):
-        threading.Thread(target=self.broadcast_presence, daemon=True).start()
-        threading.Thread(target=self.listen_for_peers, daemon=True).start()
-        threading.Thread(target=self.cleanup_peers, daemon=True).start()
+        # Start the UDP discovery only if three is a swarm key
+        if self.fernet is not None:
+            threading.Thread(target=self.broadcast_presence, daemon=True).start()
+            threading.Thread(target=self.listen_for_peers, daemon=True).start()
+            threading.Thread(target=self.cleanup_peers, daemon=True).start()
 
     def broadcast_presence(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
